@@ -10,28 +10,44 @@ services:
       - "8000:8000"
     volumes:
       - .:/var/www
+      # Descomente se tiver o certificado da empresa em ./certs/corp-ca.crt
+      # - ./certs/corp-ca.crt:/usr/local/share/ca-certificates/corp-ca.crt:ro
+    # environment:
+    #   SSL_CERT_FILE: /usr/local/share/ca-certificates/corp-ca.crt
     depends_on:
       db:
         condition: service_healthy
     networks:
       - video-store-network
-    command: sh -c "composer install --no-interaction --no-progress && php artisan serve --host=0.0.0.0 --port=8000"
+    command: sh -c "git config --global --add safe.directory /var/www && composer install --no-interaction --no-progress && php artisan serve --host=0.0.0.0 --port=8000"
+
+  scheduler:
+    image: video-store-app
+    container_name: video-store_scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    depends_on:
+      - app
+      - db
+    networks:
+      - video-store-network
+    command: sh -c "until [ -f vendor/autoload.php ]; do sleep 3; done && php artisan schedule:work"
 
   vite:
-      image: node:20-alpine
-      container_name: video-store_vite
-      restart: unless-stopped
-      ports:
-        - "5173:5173"
-      working_dir: /var/www
-      volumes:
-        - .:/var/www
-        # node_modules fica num volume nomeado: sempre binários Linux,
-        # independente do que existir no host
-        - node_modules:/var/www/node_modules
-      networks:
-        - video-store-network
-      command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    image: node:22-alpine
+    container_name: video-store_vite
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - node_modules:/var/www/node_modules
+    networks:
+      - video-store-network
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
 
   db:
     image: mysql:8.0

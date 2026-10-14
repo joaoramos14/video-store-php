@@ -11,13 +11,13 @@ class MovieController extends Controller
 {
     public function index()
     {
-        $movies = Movie::with('genre')->paginate(10);
+        $movies = Movie::with('genre')->orderBy('title')->paginate(10);
         return view('admin.movies.index', compact('movies'));
     }
 
     public function create()
     {
-        $genres = Genre::all();
+        $genres = Genre::orderBy('name')->get();
         return view('admin.movies.create', compact('genres'));
     }
 
@@ -25,10 +25,11 @@ class MovieController extends Controller
     {
         $data = $request->validate([
             'title'       => 'required|string|max:255',
+            'director'    => 'nullable|string|max:255',
             'synopsis'    => 'nullable|string',
             'year'        => 'required|integer|between:1888,' . date('Y'),
             'duration'    => 'required|integer|min:1',
-            'cover'       => 'nullable|string',
+            'cover'       => 'nullable|string|max:255',
             'stock'       => 'required|integer|min:0',
             'daily_price' => 'required|numeric|min:0',
             'genre_id'    => 'required|exists:genres,id',
@@ -42,7 +43,7 @@ class MovieController extends Controller
 
     public function edit(Movie $movie)
     {
-        $genres = Genre::all();
+        $genres = Genre::orderBy('name')->get();
         return view('admin.movies.edit', compact('movie', 'genres'));
     }
 
@@ -50,10 +51,11 @@ class MovieController extends Controller
     {
         $data = $request->validate([
             'title'       => 'required|string|max:255',
+            'director'    => 'nullable|string|max:255',
             'synopsis'    => 'nullable|string',
             'year'        => 'required|integer|between:1888,' . date('Y'),
             'duration'    => 'required|integer|min:1',
-            'cover'       => 'nullable|string',
+            'cover'       => 'nullable|string|max:255',
             'stock'       => 'required|integer|min:0',
             'daily_price' => 'required|numeric|min:0',
             'genre_id'    => 'required|exists:genres,id',
@@ -66,6 +68,11 @@ class MovieController extends Controller
 
     public function destroy(Movie $movie)
     {
+        // rentals.movie_id é restrictOnDelete: sem essa checagem o MySQL devolve erro de FK (500)
+        if ($movie->rentals()->exists()) {
+            return back()->with('error', 'Não é possível excluir este filme pois existem aluguéis associados a ele.');
+        }
+
         $movie->delete();
 
         return redirect()->route('admin.movies.index')->with('status', 'Filme excluído com sucesso!');

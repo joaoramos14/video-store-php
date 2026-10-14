@@ -6,16 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Rental;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RentalController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $rentals = Rental::with(['user', 'movie'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $status = $request->query('status');
 
-        return view('admin.rentals.index', compact('rentals'));
+        $rentals = Rental::with(['user', 'movie'])
+            ->when($status === 'active', fn($q) => $q->where('status', 'active')->where('due_at', '>=', now()))
+            ->when($status === 'late', fn($q) => $q->where(function ($q) {
+                $q->where('status', 'late')
+                    ->orWhere(fn($q) => $q->where('status', 'active')->where('due_at', '<', now()));
+            }))
+            ->when($status === 'returned', fn($q) => $q->where('status', 'returned'))
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.rentals.index', compact('rentals', 'status'));
     }
 
     public function return(Rental $rental)
@@ -27,21 +37,25 @@ class RentalController extends Controller
         $now = Carbon::now();
         $lateFee = 0;
 
-        // Se a devolução for feita após a data prevista, calcula a multa
-        if ($now->greaterThan($rental->due_date)) {
-            $daysLate = $now->diffInDays($rental->due_date);
-            // Multa: preço diário do filme * dias de atraso * 1.5
-            $lateFee = $daysLate * $rental->movie->daily_price * 1.5;
+        // Se a devolução for feita após o prazo, calcula a multa
+        if ($now->greaterThan($rental->due_at)) {
+            // Cada dia (ou fração) de atraso conta como um dia
+            $daysLate = (int) ceil($rental->due_at->diffInSeconds($now) / 86400);
+            // Multa: diária paga no aluguel * dias de atraso * 1.5
+            $dailyPrice = $rental->total_price / max($rental->days, 1);
+            $lateFee = round($daysLate * $dailyPrice * 1.5, 2);
         }
 
-        $rental->update([
-            'returned_at' => $now,
-            'late_fee'    => $lateFee,
-            'status'      => 'returned',
-        ]);
+        DB::transaction(function () use ($rental, $now, $lateFee) {
+            $rental->update([
+                'returned_at' => $now,
+                'late_fee'    => $lateFee,
+                'status'      => 'returned',
+            ]);
 
-        // Devolve 1 unidade ao estoque do filme
-        $rental->movie->increment('stock');
+            // Devolve 1 unidade ao estoque do filme
+            $rental->movie->increment('stock');
+        });
 
         $message = 'Devolução registrada com sucesso!';
         if ($lateFee > 0) {
