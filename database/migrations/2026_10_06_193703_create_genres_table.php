@@ -10,9 +10,8 @@ return new class extends Migration
     {
         Schema::create('genres', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('tmdb_id')->nullable()->unique(); // só nos generos importados do TMDB
+            $table->unsignedBigInteger('tmdb_id')->nullable()->unique();
             $table->string('name')->unique();
-            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

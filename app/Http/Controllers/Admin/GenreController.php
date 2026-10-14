@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Genre;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class GenreController extends Controller
 {
@@ -16,19 +17,39 @@ class GenreController extends Controller
 
     public function create()
     {
-        return view('admin.genres.create');
+        $tmdbGenres = [];
+
+        if (config('services.tmdb.key')) {
+            $response = Http::withOptions(['verify' => config('services.tmdb.verify', true)])->get("https://api.themoviedb.org/3/genre/movie/list", [
+                'api_key'  => config('services.tmdb.key'),
+                'language' => 'pt-BR',
+            ]);
+
+            if ($response->successful()) {
+                $tmdbGenres = $response->json()['genres'] ?? [];
+            }
+        }
+
+        // Pega os tmdb_ids dos gêneros já cadastrados
+        $importedTmdbIds = Genre::whereNotNull('tmdb_id')->pluck('tmdb_id')->toArray();
+
+        return view('admin.genres.create', compact('tmdbGenres', 'importedTmdbIds'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'        => 'required|string|max:255|unique:genres,name',
-            'description' => 'nullable|string',
+            'tmdb_id' => 'required|integer|unique:genres,tmdb_id',
+            'name'    => 'required|string|max:255|unique:genres,name',
+        ], [
+            'tmdb_id.required' => 'Selecione um gênero válido da lista de sugestões.',
+            'tmdb_id.unique'   => 'Este gênero do TMDB já foi cadastrado.',
+            'name.unique'      => 'Já existe um gênero com este nome.',
         ]);
 
         Genre::create($data);
 
-        return redirect()->route('admin.genres.index')->with('status', 'Gênero criado com sucesso!');
+        return redirect()->route('admin.genres.index')->with('status', 'Gênero cadastrado com sucesso!');
     }
 
     public function edit(Genre $genre)
@@ -39,8 +60,7 @@ class GenreController extends Controller
     public function update(Request $request, Genre $genre)
     {
         $data = $request->validate([
-            'name'        => 'required|string|max:255|unique:genres,name,' . $genre->id,
-            'description' => 'nullable|string',
+            'name' => 'required|string|max:255|unique:genres,name,' . $genre->id,
         ]);
 
         $genre->update($data);

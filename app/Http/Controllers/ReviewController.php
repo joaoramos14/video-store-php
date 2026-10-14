@@ -16,16 +16,23 @@ class ReviewController extends Controller
             abort(403);
         }
 
-        $request->validate([
+        // Cada aluguel recebe uma única avaliação
+        if ($rental->review()->exists()) {
+            return back()->with('error', 'Este aluguel já foi avaliado.');
+        }
+
+        // Os erros ficam em um "bag" por aluguel, para aparecerem só no formulário certo
+        $data = $request->validateWithBag('review_' . $rental->id, [
             'rating'  => 'required|integer|between:1,5',
             'comment' => 'nullable|string|max:1000',
         ]);
 
         Review::create([
-            'user_id'  => Auth::id(),
-            'movie_id' => $rental->movie_id,
-            'rating'   => $request->rating,
-            'comment'  => $request->comment,
+            'rental_id' => $rental->id,
+            'user_id'   => Auth::id(),
+            'movie_id'  => $rental->movie_id,
+            'rating'    => $data['rating'],
+            'comment'   => $data['comment'] ?? null,
         ]);
 
         return back()->with('status', 'Avaliação enviada com sucesso!');

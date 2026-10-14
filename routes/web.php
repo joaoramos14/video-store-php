@@ -16,11 +16,12 @@ Route::middleware('auth.basic')->group(function () {
 
     // Rotas admin
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('genres/import', [Admin\GenreController::class, 'import'])->name('genres.import');
         Route::resource('genres', Admin\GenreController::class)->except('show');
         Route::resource('movies', Admin\MovieController::class)->except('show');
         Route::get('rentals', [Admin\RentalController::class, 'index'])->name('rentals.index');
         Route::post('rentals/{rental}/return', [Admin\RentalController::class, 'return'])->name('rentals.return');
+        // TMDB
         Route::get('tmdb/search', [Admin\TmdbController::class, 'search'])->name('tmdb.search');
+        Route::get('tmdb/movies/{id}', [Admin\TmdbController::class, 'show'])->name('tmdb.show');
     });
 });
