@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-neutral-950">
+<html lang="pt-BR" class="h-full bg-[#14181c]">
 
 <head>
     <meta charset="utf-8">
@@ -9,51 +9,57 @@
 </head>
 
 <body
-    class="bg-neutral-950 text-neutral-200 flex flex-col min-h-screen font-sans antialiased selection:bg-sky-500 selection:text-neutral-950">
+    class="bg-[#14181c] text-[#9ab] flex flex-col min-h-screen font-sans text-[15px] leading-relaxed antialiased selection:bg-[#53c7ff] selection:text-[#14181c]">
 
-    <!-- Header Navigation -->
-    <header class="bg-neutral-900/90 border-b border-neutral-800 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <!-- Header -->
+    <header class="bg-[#14181c] border-b border-[#2c3440]">
+        <div class="max-w-[950px] mx-auto px-4 h-[72px] flex items-center justify-between">
 
-            <div class="flex items-center space-x-8">
+            <a href="{{ route('movies.index') }}" class="flex items-center gap-3 group">
+                <!-- Três pontos: assinatura visual da marca -->
+                <span class="flex items-center -space-x-1" aria-hidden="true">
+                    <span class="w-[18px] h-[18px] rounded-full bg-[#1f7fb8]"></span>
+                    <span class="w-[18px] h-[18px] rounded-full bg-[#53c7ff]"></span>
+                    <span class="w-[18px] h-[18px] rounded-full bg-[#b5e8ff]"></span>
+                </span>
+                <span class="text-white text-[22px] font-bold tracking-tight">7 Rent</span>
+            </a>
+
+            <nav class="flex items-center gap-5 text-[12px] font-semibold uppercase tracking-[0.1em]">
                 <a href="{{ route('movies.index') }}"
-                    class="text-xl font-black tracking-wider text-white uppercase flex items-center space-x-2">
-                    <span class="text-sky-400 font-bold">7</span><span class="text-neutral-100">RENT</span>
-                </a>
-
-                <nav class="hidden md:flex space-x-6 text-sm font-semibold tracking-wide uppercase text-neutral-400">
-                    <a href="{{ route('movies.index') }}"
-                        class="hover:text-sky-400 transition-colors duration-150">Catálogo</a>
-                    <a href="{{ route('rentals.index') }}"
-                        class="hover:text-sky-400 transition-colors duration-150">Meus Aluguéis</a>
-                </nav>
-            </div>
-
-            @if (auth()->user()?->isAdmin())
-                <div
-                    class="flex items-center space-x-6 border-l border-neutral-800 pl-6 text-xs font-bold tracking-widest uppercase text-neutral-400">
-                    <a href="{{ route('admin.genres.index') }}"
-                        class="hover:text-sky-400 transition-colors duration-150">Gêneros</a>
-                    <a href="{{ route('admin.movies.index') }}"
-                        class="hover:text-sky-400 transition-colors duration-150">Filmes</a>
-                    <a href="{{ route('admin.rentals.index') }}"
-                        class="hover:text-sky-400 transition-colors duration-150">Devoluções</a>
-                </div>
-            @endif
-
+                    class="text-[#9ab] hover:text-white transition-colors">Catálogo</a>
+                <a href="{{ route('rentals.index') }}"
+                    class="text-[#9ab] hover:text-white transition-colors">Meus aluguéis</a>
+            </nav>
         </div>
+
+        @if (auth()->user()?->isAdmin())
+            <!-- Subnavegação do administrador -->
+            <div class="bg-[#1b2229] border-t border-[#2c3440]">
+                <div
+                    class="max-w-[950px] mx-auto px-4 h-10 flex items-center gap-5 text-[11px] font-semibold uppercase tracking-[0.1em]">
+                    <span class="text-[#678]">Admin</span>
+                    <a href="{{ route('admin.genres.index') }}"
+                        class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Gêneros</a>
+                    <a href="{{ route('admin.movies.index') }}"
+                        class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Filmes</a>
+                    <a href="{{ route('admin.rentals.index') }}"
+                        class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Devoluções</a>
+                </div>
+            </div>
+        @endif
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+    <!-- Conteúdo -->
+    <main class="max-w-[950px] mx-auto px-4 py-10 flex-grow w-full">
         @if (session('status'))
-            <div class="mb-6 p-4 bg-sky-950/60 border border-sky-500/40 text-sky-200 rounded-md text-sm">
+            <div class="mb-6 px-4 py-3 bg-[#53c7ff]/10 border border-[#53c7ff]/40 text-[#b5e8ff] rounded-[3px] text-sm">
                 {{ session('status') }}
             </div>
         @endif
 
         @if (session('error'))
-            <div class="mb-6 p-4 bg-red-950/60 border border-red-500/40 text-red-200 rounded-md text-sm">
+            <div class="mb-6 px-4 py-3 bg-[#ff5b5b]/10 border border-[#ff5b5b]/40 text-[#ffb3b3] rounded-[3px] text-sm">
                 {{ session('error') }}
             </div>
         @endif
@@ -61,14 +67,11 @@
         @yield('content')
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-neutral-900 border-t border-neutral-800 text-neutral-500 text-xs py-8 mt-auto">
-        <div
-            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p>Locadora de Filmes &copy; {{ date('Y') }} &mdash; Todos os direitos reservados.</p>
-            <p class="text-neutral-600">
-                Dados fornecidos via API do TMDB.
-            </p>
+    <!-- Rodapé -->
+    <footer class="border-t border-[#2c3440] text-[#678] text-xs py-8 mt-auto">
+        <div class="max-w-[950px] mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>&copy; {{ date('Y') }} 7 Rent. Todos os direitos reservados.</p>
+            <p>Dados de filmes fornecidos pelo TMDB.</p>
         </div>
     </footer>
 

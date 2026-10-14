@@ -10,7 +10,7 @@ class EnsureIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-    abort_unless($request->user()?->isAdmin(), 403, 'Acesso não autorizado.');
+        abort_unless($request->user()?->isAdmin(), 403, 'Acesso não autorizado.');
 
         return $next($request);
     }
