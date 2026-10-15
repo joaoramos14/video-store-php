@@ -52,13 +52,14 @@ class MovieController extends Controller
             ->paginate(6)
             ->fragment('avaliacoes');
 
-        // Aluguel em andamento do próprio usuário para este filme (se houver)
-        $activeRental = Rental::where('user_id', Auth::id())
+        // Reserva ou aluguel em andamento do próprio usuário para este filme (se houver).
+        // Enquanto existir um, a tela troca o formulário de reserva por um aviso.
+        $openRental = Rental::where('user_id', Auth::id())
             ->where('movie_id', $movie->id)
-            ->whereIn('status', ['active', 'late'])
+            ->blocking()
             ->latest()
             ->first();
 
-        return view('user.movies.show', compact('movie', 'distribution', 'reviews', 'activeRental'));
+        return view('user.movies.show', compact('movie', 'distribution', 'reviews', 'openRental'));
     }
 }
