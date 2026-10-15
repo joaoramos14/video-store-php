@@ -34,7 +34,8 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->is_admin;
+        // (bool) cobre usuários recém-criados em memória, em que is_admin ainda não foi carregado
+        return (bool) $this->is_admin;
     }
 
     public function rentals(): HasMany
