@@ -16,6 +16,11 @@ class ReviewController extends Controller
             abort(403);
         }
 
+        // Reservas canceladas, expiradas ou ainda não retiradas não podem ser avaliadas
+        if (!$rental->wasPickedUp()) {
+            return back()->with('error', 'Você só pode avaliar filmes que já retirou na loja.');
+        }
+
         // Cada aluguel recebe uma única avaliação
         if ($rental->review()->exists()) {
             return back()->with('error', 'Este aluguel já foi avaliado.');

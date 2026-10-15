@@ -3,11 +3,7 @@
 @section('title', $movie->title . ' - 7 Rent')
 
 @php
-    $coverUrl = !$movie->cover
-        ? null
-        : (str_starts_with($movie->cover, 'http')
-            ? $movie->cover
-            : "https://image.tmdb.org/t/p/w500{$movie->cover}");
+    $coverUrl = !$movie->cover ? null : (str_starts_with($movie->cover, 'http') ? $movie->cover : "https://image.tmdb.org/t/p/w500{$movie->cover}");
     $available = $movie->stock > 0;
     $avg = $movie->reviews_avg_rating;
     $maxCount = max($distribution->max() ?? 0, 1);
@@ -26,8 +22,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-x-8 gap-y-8 mt-5">
 
             <!-- Capa -->
-            <div
-                class="w-[150px] sm:w-[180px] aspect-[2/3] rounded-[3px] overflow-hidden bg-[#2c3440] ring-1 ring-inset ring-white/15">
+            <div class="w-[150px] sm:w-[180px] aspect-[2/3] rounded-[3px] overflow-hidden bg-[#2c3440] ring-1 ring-inset ring-white/15">
                 @if ($coverUrl)
                     <img src="{{ $coverUrl }}" alt="Capa de {{ $movie->title }}" class="w-full h-full object-cover">
                 @else
@@ -52,8 +47,7 @@
                 </p>
 
                 @if ($movie->director)
-                    <p class="mt-1 text-sm text-[#678]">Dirigido por <span class="text-[#9ab]">{{ $movie->director }}</span>
-                    </p>
+                    <p class="mt-1 text-sm text-[#678]">Dirigido por <span class="text-[#9ab]">{{ $movie->director }}</span></p>
                 @endif
 
                 @if ($movie->synopsis)
@@ -64,13 +58,11 @@
                 <div class="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
                     @if ($movie->reviews_count > 0)
                         <div class="flex items-baseline gap-3">
-                            <span
-                                class="text-white text-4xl font-bold tabular-nums">{{ number_format($avg, 1, ',', '') }}</span>
+                            <span class="text-white text-4xl font-bold tabular-nums">{{ number_format($avg, 1, ',', '') }}</span>
                             <div>
                                 @include('partials.stars', ['value' => $avg])
                                 <p class="text-xs text-[#678] tabular-nums">
-                                    {{ $movie->reviews_count }}
-                                    {{ $movie->reviews_count == 1 ? 'avaliação' : 'avaliações' }}
+                                    {{ $movie->reviews_count }} {{ $movie->reviews_count == 1 ? 'avaliação' : 'avaliações' }}
                                 </p>
                             </div>
                         </div>
@@ -81,8 +73,7 @@
                                 <li class="flex items-center gap-2 text-[11px] tabular-nums">
                                     <span class="w-2.5 text-[#9ab]">{{ $star }}</span>
                                     <span class="flex-1 h-1.5 bg-[#2c3440] rounded-[2px] overflow-hidden">
-                                        <span class="block h-full bg-[#53c7ff]"
-                                            style="width: {{ ($count / $maxCount) * 100 }}%"></span>
+                                        <span class="block h-full bg-[#53c7ff]" style="width: {{ $count / $maxCount * 100 }}%"></span>
                                     </span>
                                     <span class="w-4 text-right text-[#678]">{{ $count }}</span>
                                 </li>
@@ -94,18 +85,21 @@
                 </div>
             </div>
 
-            <!-- Aluguel: ocupa as duas colunas -->
+            <!-- Reserva: ocupa as duas colunas -->
             <section class="sm:col-span-2" aria-labelledby="alugar-titulo">
-                <h2 id="alugar-titulo" class="{{ $sectionTitle }}">Alugar</h2>
+                <h2 id="alugar-titulo" class="{{ $sectionTitle }}">Reservar</h2>
                 <div class="bg-[#1b2229] border-x border-b border-[#2c3440] rounded-b-[3px] p-5">
 
-                    @if ($activeRental)
-                        <p
-                            class="mb-4 text-sm text-[#b5e8ff] bg-[#53c7ff]/10 border border-[#53c7ff]/30 rounded-[3px] px-3 py-2">
-                            Você já está com este filme. A devolução está prevista para
-                            <span class="tabular-nums">{{ $activeRental->due_at->format('d/m/Y') }}</span>.
-                            <a href="{{ route('rentals.index') }}"
-                                class="underline underline-offset-2 hover:text-white">Ver meus aluguéis</a>
+                    @if ($openRental)
+                        <p class="mb-4 text-sm text-[#b5e8ff] bg-[#53c7ff]/10 border border-[#53c7ff]/30 rounded-[3px] px-3 py-2">
+                            @if ($openRental->isReserved())
+                                Você reservou este filme. Retire na loja até
+                                <span class="tabular-nums">{{ $openRental->reserved_until->format('d/m/Y') }} às {{ $openRental->reserved_until->format('H:i') }}</span>.
+                            @else
+                                Você está com este filme. A devolução está prevista para
+                                <span class="tabular-nums">{{ $openRental->due_at->format('d/m/Y') }}</span>.
+                            @endif
+                            <a href="{{ route('rentals.index') }}" class="underline underline-offset-2 hover:text-white">Ver meus aluguéis</a>
                         </p>
                     @endif
 
@@ -114,14 +108,11 @@
                         <!-- Preço e disponibilidade -->
                         <div class="lg:min-w-[190px]">
                             <p class="text-white tabular-nums">
-                                <span class="text-2xl font-bold">R$
-                                    {{ number_format($movie->daily_price, 2, ',', '.') }}</span>
+                                <span class="text-2xl font-bold">R$ {{ number_format($movie->daily_price, 2, ',', '.') }}</span>
                                 <span class="text-sm text-[#678]">por dia</span>
                             </p>
-                            <p
-                                class="mt-1 text-xs flex items-center gap-1.5 {{ $available ? 'text-[#9ab]' : 'text-[#ff9b9b]' }}">
-                                <span
-                                    class="inline-block w-1.5 h-1.5 rounded-full {{ $available ? 'bg-[#53c7ff]' : 'bg-[#ff5b5b]' }}"></span>
+                            <p class="mt-1 text-xs flex items-center gap-1.5 {{ $available ? 'text-[#9ab]' : 'text-[#ff9b9b]' }}">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full {{ $available ? 'bg-[#53c7ff]' : 'bg-[#ff5b5b]' }}"></span>
                                 @if ($available)
                                     Disponível &middot; {{ $movie->stock }} {{ $movie->stock == 1 ? 'cópia' : 'cópias' }}
                                 @else
@@ -130,29 +121,28 @@
                             </p>
                         </div>
 
-                        @if ($available)
+                        @if (!$openRental && $available)
                             <form action="{{ route('rentals.store', $movie) }}" method="POST"
                                 class="flex-1 flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
                                 @csrf
                                 <div class="sm:w-32">
                                     <label for="days" class="{{ $labelClass }}">Dias</label>
-                                    <input type="number" name="days" id="days" min="1" max="30"
-                                        step="1" required value="{{ old('days', 3) }}"
+                                    <input type="number" name="days" id="days" min="1" max="30" step="1" required
+                                        value="{{ old('days', 3) }}"
                                         class="w-full bg-[#2c3440] border border-transparent rounded-[3px] px-3 py-2.5 text-sm text-white tabular-nums focus:outline-none focus:border-[#53c7ff] focus:bg-[#14181c] transition-colors">
                                 </div>
 
                                 <p class="flex-1 text-sm text-[#9ab] sm:pb-0.5">
                                     Total: <span id="rent-total" class="text-white font-semibold tabular-nums"></span>
-                                    <span class="block text-xs text-[#678]">Devolução até <span id="rent-due"
-                                            class="tabular-nums"></span></span>
+                                    <span class="block text-xs text-[#678]">Devolução até <span id="rent-due" class="tabular-nums"></span>, se retirar hoje</span>
                                 </p>
 
                                 <button type="submit"
                                     class="px-8 py-2.5 bg-[#53c7ff] hover:bg-[#8fdcff] text-[#14181c] text-xs font-bold uppercase tracking-[0.1em] rounded-[3px] transition-colors">
-                                    Alugar
+                                    Reservar
                                 </button>
                             </form>
-                        @else
+                        @elseif (!$openRental)
                             <div class="lg:ml-auto">
                                 <button type="button" disabled
                                     class="px-8 py-2.5 bg-[#2c3440] text-[#678] text-xs font-bold uppercase tracking-[0.1em] rounded-[3px] cursor-not-allowed">
@@ -165,6 +155,13 @@
                     @error('days')
                         <p class="text-[#ff7b7b] text-xs mt-3">{{ $message }}</p>
                     @enderror
+
+                    @if (!$openRental && $available)
+                        <p class="mt-4 text-xs text-[#678]">
+                            Retire o filme na loja em até {{ config('rentals.reservation_hours') }} horas.
+                            O prazo de devolução só começa a contar na retirada.
+                        </p>
+                    @endif
                 </div>
             </section>
         </div>
@@ -183,12 +180,10 @@
                         <p class="text-sm">
                             <span class="text-white font-semibold">{{ $review->user->name }}</span>
                             <span class="ml-2">@include('partials.stars', ['value' => $review->rating])</span>
-                            <span
-                                class="ml-2 text-xs text-[#678] tabular-nums">{{ $review->created_at->format('d/m/Y') }}</span>
+                            <span class="ml-2 text-xs text-[#678] tabular-nums">{{ $review->created_at->format('d/m/Y') }}</span>
                         </p>
                         @if ($review->comment)
-                            <p class="mt-1.5 text-sm leading-relaxed text-[#9ab] whitespace-pre-line break-words">
-                                {{ $review->comment }}</p>
+                            <p class="mt-1.5 text-sm leading-relaxed text-[#9ab] whitespace-pre-line break-words">{{ $review->comment }}</p>
                         @endif
                     </div>
                 </article>
@@ -213,10 +208,7 @@
             const due = document.getElementById('rent-due');
             if (!input) return;
 
-            const money = new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            });
+            const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
             const date = new Intl.DateTimeFormat('pt-BR');
 
             function update() {

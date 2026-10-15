@@ -44,7 +44,7 @@
                     <a href="{{ route('admin.movies.index') }}"
                         class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Filmes</a>
                     <a href="{{ route('admin.rentals.index') }}"
-                        class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Devoluções</a>
+                        class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Aluguéis</a>
                 </div>
             </div>
         @endif
