@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Genre;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -20,13 +21,20 @@ class GenreController extends Controller
         $tmdbGenres = [];
 
         if (config('services.tmdb.key')) {
-            $response = Http::withOptions(['verify' => config('services.tmdb.verify', true)])->get("https://api.themoviedb.org/3/genre/movie/list", [
-                'api_key'  => config('services.tmdb.key'),
-                'language' => 'pt-BR',
-            ]);
+            try {
+                $response = Http::timeout(10)
+                    ->withOptions(['verify' => config('services.tmdb.verify', true)])
+                    ->get('https://api.themoviedb.org/3/genre/movie/list', [
+                        'api_key'  => config('services.tmdb.key'),
+                        'language' => 'pt-BR',
+                    ]);
 
-            if ($response->successful()) {
-                $tmdbGenres = $response->json()['genres'] ?? [];
+                if ($response->successful()) {
+                    $tmdbGenres = $response->json()['genres'] ?? [];
+                }
+            } catch (ConnectionException) {
+                // Sem rede ou TMDB fora do ar: a tela abre normalmente, só sem as sugestões
+                session()->now('error', 'Não foi possível consultar o TMDB agora. Tente novamente em instantes.');
             }
         }
 

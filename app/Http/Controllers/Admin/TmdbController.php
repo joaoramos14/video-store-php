@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -10,6 +12,12 @@ class TmdbController extends Controller
 {
     private const API = 'https://api.themoviedb.org/3';
     private const IMG = 'https://image.tmdb.org/t/p';
+
+    /** Cliente HTTP do TMDB, com tempo limite para a tela não ficar travada se a API não responder. */
+    private function tmdb(): PendingRequest
+    {
+        return Http::timeout(10)->withOptions(['verify' => config('services.tmdb.verify', true)]);
+    }
 
     /**
      * Busca filmes pelo nome e devolve uma lista enxuta em JSON.
@@ -20,11 +28,15 @@ class TmdbController extends Controller
         $results = [];
 
         if ($query) {
-            $response = Http::withOptions(['verify' => config('services.tmdb.verify', true)])->get(self::API . '/search/movie', [
-                'api_key'  => config('services.tmdb.key'),
-                'language' => 'pt-BR',
-                'query'    => $query,
-            ]);
+            try {
+                $response = $this->tmdb()->get(self::API . '/search/movie', [
+                    'api_key'  => config('services.tmdb.key'),
+                    'language' => 'pt-BR',
+                    'query'    => $query,
+                ]);
+            } catch (ConnectionException) {
+                return response()->json(['message' => 'Não foi possível consultar o TMDB agora.'], 503);
+            }
 
             if ($response->successful()) {
                 $results = $response->json()['results'] ?? [];
@@ -48,11 +60,15 @@ class TmdbController extends Controller
      */
     public function show(int $id)
     {
-        $response = Http::withOptions(['verify' => config('services.tmdb.verify', true)])->get(self::API . "/movie/{$id}", [
-            'api_key'            => config('services.tmdb.key'),
-            'language'           => 'pt-BR',
-            'append_to_response' => 'credits',
-        ]);
+        try {
+            $response = $this->tmdb()->get(self::API . "/movie/{$id}", [
+                'api_key'            => config('services.tmdb.key'),
+                'language'           => 'pt-BR',
+                'append_to_response' => 'credits',
+            ]);
+        } catch (ConnectionException) {
+            return response()->json(['message' => 'Não foi possível consultar o TMDB agora.'], 503);
+        }
 
         if (!$response->successful()) {
             return response()->json(['message' => 'Filme não encontrado no TMDB.'], 404);
