@@ -28,8 +28,8 @@
             <nav class="flex items-center gap-5 text-[12px] font-semibold uppercase tracking-[0.1em]">
                 <a href="{{ route('movies.index') }}"
                     class="text-[#9ab] hover:text-white transition-colors">Catálogo</a>
-                <a href="{{ route('rentals.index') }}"
-                    class="text-[#9ab] hover:text-white transition-colors">Meus aluguéis</a>
+                <a href="{{ route('rentals.index') }}" class="text-[#9ab] hover:text-white transition-colors">Meus
+                    aluguéis</a>
             </nav>
         </div>
 
@@ -69,9 +69,16 @@
 
     <!-- Rodapé -->
     <footer class="border-t border-[#2c3440] text-[#678] text-xs py-8 mt-auto">
-        <div class="max-w-[950px] mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div class="max-w-[950px] mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p>&copy; {{ date('Y') }} 7 Rent. Todos os direitos reservados.</p>
-            <p>Dados de filmes fornecidos pelo TMDB.</p>
+            <div class="flex items-center gap-3">
+                <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">
+                    <img src="{{ asset('images/tmdb-logo.svg') }}" alt="TMDB" class="h-6">
+                </a>
+                <p class="max-w-xs">
+                    This product uses the TMDB API but is not endorsed or certified by TMDB.
+                </p>
+            </div>
         </div>
     </footer>
 
