@@ -2,6 +2,8 @@
 
 Sistema de locadora feito com Laravel 13 e MySQL. O cliente reserva o filme pelo site, retira na loja e devolve no balcão. O cadastro de filmes e gêneros usa a API do [TMDB](https://www.themoviedb.org/).
 
+> Projeto de treinamento, feito para praticar Laravel, Docker e integração com APIs.
+
 ## Como funciona o aluguel
 
 1. **Reserva (site):** o cliente escolhe o filme e os dias. A reserva já separa uma cópia do estoque.
