@@ -86,6 +86,13 @@ class TmdbController extends Controller
             'duration'   => $m['runtime'] ?? null,
             'cover'      => !empty($m['poster_path']) ? self::IMG . '/w500' . $m['poster_path'] : null,
             'genre_tmdb_ids' => collect($m['genres'] ?? [])->pluck('id')->all(),
+            'genres' => collect($m['genres'] ?? [])
+                ->map(fn($genre) => [
+                    'id' => $genre['id'],
+                    'name' => $genre['name'],
+                ])
+                ->values()
+                ->all(),
         ]);
     }
 }

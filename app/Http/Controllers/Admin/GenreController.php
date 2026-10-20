@@ -47,17 +47,29 @@ class GenreController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'tmdb_id' => 'required|integer|unique:genres,tmdb_id',
-            'name'    => 'required|string|max:255|unique:genres,name',
+            'tmdb_id' => 'required|integer',
+            'name'    => 'required|string|max:255',
         ], [
             'tmdb_id.required' => 'Selecione um gênero válido da lista de sugestões.',
-            'tmdb_id.unique'   => 'Este gênero do TMDB já foi cadastrado.',
-            'name.unique'      => 'Já existe um gênero com este nome.',
+            'name.required'    => 'O nome do gênero é obrigatório.',
         ]);
 
-        Genre::create($data);
+        $genre = Genre::firstOrCreate(
+            ['tmdb_id' => $data['tmdb_id']],
+            ['name' => $data['name']]
+        );
 
-        return redirect()->route('admin.genres.index')->with('status', 'Gênero cadastrado com sucesso!');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id'      => $genre->id,
+                'tmdb_id' => $genre->tmdb_id,
+                'name'    => $genre->name,
+            ], 200);
+        }
+
+        return redirect()
+            ->route('admin.genres.index')
+            ->with('status', 'Gênero cadastrado com sucesso!');
     }
 
     public function edit(Genre $genre)
