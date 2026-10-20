@@ -7,7 +7,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\Admin;
 
 Route::middleware('auth.basic')->group(function () {
-    // Rotas comum
+    // Rotas comuns
     Route::get('/', [MovieController::class, 'index'])->name('movies.index');
     Route::get('/movies/{movie}', [MovieController::class, 'show'])->name('movies.show');
     Route::get('/my-rentals', [RentalController::class, 'index'])->name('rentals.index');

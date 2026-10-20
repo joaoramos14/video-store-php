@@ -46,25 +46,27 @@ class GenreController extends Controller
 
     public function store(Request $request)
     {
+        // Se falhar, o Laravel volta para o formulário com os erros
+        // (ou responde 422 com {message, errors} quando a tela de filme chama via fetch)
         $data = $request->validate([
-            'tmdb_id' => 'required|integer',
-            'name'    => 'required|string|max:255',
+            'tmdb_id' => 'required|integer|unique:genres,tmdb_id',
+            'name'    => 'required|string|max:255|unique:genres,name',
         ], [
             'tmdb_id.required' => 'Selecione um gênero válido da lista de sugestões.',
+            'tmdb_id.unique'   => 'Este gênero do TMDB já está cadastrado.',
             'name.required'    => 'O nome do gênero é obrigatório.',
+            'name.unique'      => 'Já existe um gênero com este nome.',
         ]);
 
-        $genre = Genre::firstOrCreate(
-            ['tmdb_id' => $data['tmdb_id']],
-            ['name' => $data['name']]
-        );
+        $genre = Genre::create($data);
 
+        // A tela de cadastro de filme chama esta rota via fetch e espera JSON
         if ($request->expectsJson()) {
             return response()->json([
                 'id'      => $genre->id,
                 'tmdb_id' => $genre->tmdb_id,
                 'name'    => $genre->name,
-            ], 200);
+            ], 201);
         }
 
         return redirect()
