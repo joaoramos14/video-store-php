@@ -91,6 +91,15 @@
             "'": '&#39;'
         } [c]));
 
+        // Erro com mensagem pronta para o usuário, vinda do servidor.
+        // Outros erros (bugs, rede) não são mostrados como estão: caem na mensagem padrão.
+        class ApiError extends Error {}
+
+        async function apiError(res, fallback) {
+            const body = await res.json().catch(() => ({}));
+            return new ApiError(body.message || fallback);
+        }
+
         function setStatus(text, isError = false) {
             statusLine.textContent = text;
             statusLine.classList.toggle('hidden', !text);
@@ -119,12 +128,12 @@
                         'Accept': 'application/json'
                     }
                 });
-                if (!res.ok) throw new Error();
+                if (!res.ok) throw await apiError(res, 'Não foi possível buscar no TMDB. Tente novamente.');
                 currentResults = await res.json();
                 renderResults();
             } catch (e) {
                 resultsBox.classList.add('hidden');
-                setStatus('Não foi possível buscar no TMDB. Tente novamente.', true);
+                setStatus(e instanceof ApiError ? e.message : 'Não foi possível buscar no TMDB. Tente novamente.', true);
             }
         }
 
@@ -168,12 +177,12 @@
                         'Accept': 'application/json'
                     }
                 });
-                if (!res.ok) throw new Error();
+                if (!res.ok) throw await apiError(res, 'Não foi possível carregar os dados desse filme.');
                 fillForm(await res.json());
                 searchBox.value = item.title;
                 setStatus('Dados preenchidos. Revise e informe a diária e o estoque.');
             } catch (e) {
-                setStatus('Não foi possível carregar os dados desse filme.', true);
+                setStatus(e instanceof ApiError ? e.message : 'Não foi possível carregar os dados desse filme.', true);
             }
         }
 
@@ -254,13 +263,11 @@
                     })
                 });
 
-                const data = await response.json();
-
                 if (!response.ok) {
-                    throw new Error(
-                        data.message || 'Não foi possível cadastrar o gênero.'
-                    );
+                    throw await apiError(response, 'Não foi possível cadastrar o gênero.');
                 }
+
+                const data = await response.json();
 
                 // Evita criar opções duplicadas na lista da tela.
                 let option = [...genreSelect.options].find(
@@ -272,7 +279,11 @@
                     option.value = data.id;
                     option.textContent = data.name;
                     option.dataset.tmdbId = genreToAdd.id;
-                    genreSelect.appendChild(option);
+
+                    // Mantém a lista em ordem alfabética, com "Selecione" no topo
+                    const [placeholder, ...rest] = [...genreSelect.options, option];
+                    rest.sort((a, b) => a.textContent.trim().localeCompare(b.textContent.trim(), 'pt-BR'));
+                    genreSelect.replaceChildren(placeholder, ...rest);
                 }
 
                 genreSelect.value = option.value;
@@ -286,7 +297,7 @@
 
                 setStatus('');
             } catch (error) {
-                setStatus(error.message || 'Erro ao adicionar o gênero.', true);
+                setStatus(error instanceof ApiError ? error.message : 'Erro ao adicionar o gênero.', true);
                 genreAddButton.disabled = false;
                 genreAddButton.textContent = 'Tentar novamente';
             }

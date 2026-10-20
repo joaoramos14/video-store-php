@@ -26,6 +26,12 @@ class RentalController extends Controller
                     ->orWhere(fn($q) => $q->where('status', Rental::ACTIVE)->where('due_at', '<', now()));
             }))
             ->when($status === 'returned', fn($q) => $q->where('status', Rental::RETURNED))
+            ->when($status === 'cancelled', fn($q) => $q->where('status', Rental::CANCELLED))
+            // Igual ao displayStatus(): reserva com prazo vencido já conta como expirada
+            ->when($status === 'expired', fn($q) => $q->where(function ($q) {
+                $q->where('status', Rental::EXPIRED)
+                    ->orWhere(fn($q) => $q->where('status', Rental::RESERVED)->where('reserved_until', '<', now()));
+            }))
             ->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();

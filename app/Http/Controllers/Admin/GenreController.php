@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Genre;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -54,17 +55,36 @@ class GenreController extends Controller
             'name.required'    => 'O nome do gênero é obrigatório.',
         ]);
 
-        $genre = Genre::firstOrCreate(
-            ['tmdb_id' => $data['tmdb_id']],
-            ['name' => $data['name']]
-        );
+        try {
+            $genre = Genre::firstOrCreate(
+                ['tmdb_id' => $data['tmdb_id']],
+                ['name' => $data['name']]
+            );
+        } catch (UniqueConstraintViolationException) {
+            // O firstOrCreate já resolve a corrida pelo tmdb_id. Se a exceção chegou até aqui,
+            // o que sobrou foi um nome repetido, ligado a outro ID do TMDB.
+            $message = 'Já existe um gênero com este nome, ligado a outro ID do TMDB.';
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return back()->withInput()->withErrors(['name' => $message]);
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'id'      => $genre->id,
                 'tmdb_id' => $genre->tmdb_id,
                 'name'    => $genre->name,
-            ], 200);
+            ], $genre->wasRecentlyCreated ? 201 : 200);
+        }
+
+        // Cadastrar de novo um gênero que já existe não cria nada: avisamos em vez de dizer "sucesso"
+        if (!$genre->wasRecentlyCreated) {
+            return redirect()
+                ->route('admin.genres.index')
+                ->with('error', 'Este gênero do TMDB já estava cadastrado.');
         }
 
         return redirect()

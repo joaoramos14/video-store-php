@@ -15,7 +15,7 @@ class Rental extends Model
     // Fluxo: reserved -> active -> returned. Desvios: cancelled (cliente desistiu) e expired (ninguém retirou).
     public const RESERVED  = 'reserved';
     public const ACTIVE    = 'active';
-    public const LATE      = 'late';      // legado: hoje o atraso é calculado pelo prazo, não gravado
+    public const LATE      = 'late';      // gravado pela tarefa agendada (rentals:mark-late); isLate() também calcula pelo prazo
     public const RETURNED  = 'returned';
     public const CANCELLED = 'cancelled';
     public const EXPIRED   = 'expired';

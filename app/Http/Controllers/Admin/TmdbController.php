@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -19,6 +21,22 @@ class TmdbController extends Controller
         return Http::timeout(10)->withOptions(['verify' => config('services.tmdb.verify', true)]);
     }
 
+    /** Sem chave no .env a API sempre recusa; avisamos o motivo em vez de mostrar "nada encontrado". */
+    private function missingKey(): JsonResponse
+    {
+        return response()->json(['message' => 'Configure a TMDB_API_KEY no .env para usar o TMDB.'], 503);
+    }
+
+    /** Traduz uma resposta de erro do TMDB para uma mensagem que a tela possa mostrar. */
+    private function failure(Response $response): JsonResponse
+    {
+        return match ($response->status()) {
+            401     => response()->json(['message' => 'O TMDB recusou a chave. Confira a TMDB_API_KEY no .env.'], 502),
+            404     => response()->json(['message' => 'Filme não encontrado no TMDB.'], 404),
+            default => response()->json(['message' => 'O TMDB não respondeu como esperado. Tente novamente.'], 502),
+        };
+    }
+
     /**
      * Busca filmes pelo nome e devolve uma lista enxuta em JSON.
      */
@@ -28,6 +46,10 @@ class TmdbController extends Controller
         $results = [];
 
         if ($query) {
+            if (!config('services.tmdb.key')) {
+                return $this->missingKey();
+            }
+
             try {
                 $response = $this->tmdb()->get(self::API . '/search/movie', [
                     'api_key'  => config('services.tmdb.key'),
@@ -38,9 +60,11 @@ class TmdbController extends Controller
                 return response()->json(['message' => 'Não foi possível consultar o TMDB agora.'], 503);
             }
 
-            if ($response->successful()) {
-                $results = $response->json()['results'] ?? [];
+            if (!$response->successful()) {
+                return $this->failure($response);
             }
+
+            $results = $response->json()['results'] ?? [];
         }
 
         // Só a tela de cadastro usa esta rota (via fetch), então sempre respondemos JSON.
@@ -60,6 +84,10 @@ class TmdbController extends Controller
      */
     public function show(int $id)
     {
+        if (!config('services.tmdb.key')) {
+            return $this->missingKey();
+        }
+
         try {
             $response = $this->tmdb()->get(self::API . "/movie/{$id}", [
                 'api_key'            => config('services.tmdb.key'),
@@ -71,7 +99,7 @@ class TmdbController extends Controller
         }
 
         if (!$response->successful()) {
-            return response()->json(['message' => 'Filme não encontrado no TMDB.'], 404);
+            return $this->failure($response);
         }
 
         $m = $response->json();
@@ -85,11 +113,11 @@ class TmdbController extends Controller
             'year'       => (int) substr($m['release_date'] ?? '', 0, 4) ?: null,
             'duration'   => $m['runtime'] ?? null,
             'cover'      => !empty($m['poster_path']) ? self::IMG . '/w500' . $m['poster_path'] : null,
-            'genre_tmdb_ids' => collect($m['genres'] ?? [])->pluck('id')->all(),
-            'genres' => collect($m['genres'] ?? [])
+            // Na ordem do TMDB: o primeiro é o gênero principal do filme
+            'genres'     => collect($m['genres'] ?? [])
                 ->map(fn($genre) => [
-                    'id' => $genre['id'],
-                    'name' => $genre['name'],
+                    'id'   => $genre['id'],
+                    'name' => $genre['name'] ?? '',
                 ])
                 ->values()
                 ->all(),

@@ -9,6 +9,8 @@
         'active'   => 'Em andamento',
         'late'     => 'Atrasados',
         'returned' => 'Devolvidos',
+        'cancelled' => 'Cancelados',
+        'expired'  => 'Expirados',
     ];
 @endphp
 

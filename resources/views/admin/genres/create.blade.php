@@ -82,6 +82,11 @@
         const suggestionsList = document.getElementById('suggestions-list');
         const badgeLinked = document.getElementById('badge-linked');
 
+        // Os nomes vêm do TMDB: nunca entram no HTML sem passar por aqui
+        const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+
         searchInput.addEventListener('input', function() {
             const query = this.value.trim().toLowerCase();
 
@@ -105,21 +110,20 @@
             } else {
                 suggestionsList.innerHTML = matches.map(g => {
                     const isImported = importedTmdbIds.includes(Number(g.id));
-                    const genreNameEscaped = g.name.replace(/'/g, "\\'");
 
                     if (isImported) {
                         return `
                         <div class="px-4 py-2.5 text-sm text-[#678] flex items-center justify-between cursor-not-allowed">
-                            <span>${g.name}</span>
+                            <span>${escapeHtml(g.name)}</span>
                             <span class="text-[10px] uppercase font-semibold tracking-[0.1em]">Já cadastrado</span>
                         </div>
                     `;
                     } else {
                         return `
-                        <button type="button" onclick="selectGenre(${g.id}, '${genreNameEscaped}')"
+                        <button type="button" data-id="${Number(g.id)}" data-name="${escapeHtml(g.name)}"
                             class="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#2c3440] hover:text-[#53c7ff] transition-colors flex items-center justify-between">
-                            <span class="font-medium">${g.name}</span>
-                            <span class="text-[11px] text-[#678] tabular-nums">TMDB #${g.id}</span>
+                            <span class="font-medium">${escapeHtml(g.name)}</span>
+                            <span class="text-[11px] text-[#678] tabular-nums">TMDB #${Number(g.id)}</span>
                         </button>
                     `;
                     }
@@ -127,6 +131,13 @@
             }
 
             suggestionsList.classList.remove('hidden');
+        });
+
+        // Um único listener na lista, em vez de onclick dentro do HTML gerado
+        suggestionsList.addEventListener('click', function(e) {
+            const button = e.target.closest('button[data-id]');
+            if (!button) return;
+            selectGenre(Number(button.dataset.id), button.dataset.name);
         });
 
         function selectGenre(id, name) {
