@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     image: video-store-app
     container_name: video-store_app
     restart: unless-stopped
