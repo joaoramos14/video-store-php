@@ -28,3 +28,4 @@ Thumbs.db
 *:Zone.Identifier
 _ide_helper_models.php
 /certs/corp-ca.crt
+*.patch
