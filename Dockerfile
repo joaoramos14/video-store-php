@@ -16,10 +16,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY GRM-Local-CA.crt /usr/local/share/ca-certificates/GRM-Local-CA.crt
-
-RUN update-ca-certificates
-
 RUN docker-php-ext-install \
     pdo_mysql \
     mbstring \
