@@ -30,7 +30,7 @@ Clone o repositório e acesse a pasta do projeto. Em seguida, crie o arquivo de 
 cp .env.example .env
 ```
 
-Abra o arquivo `.env` e configure `DB_PASSWORD` com uma senha para o banco de dados. Na configuração atual, essa senha é utilizada tanto pelo usuário da aplicação quanto pelo usuário `root` do MySQL.
+Abra o arquivo `.env` e preencha `DB_PASSWORD` (senha do usuário da aplicação no MySQL) e `DB_ROOT_PASSWORD` (senha do `root`). Use valores diferentes. O Docker Compose não sobe se uma das duas estiver vazia.
 
 Se estiver reutilizando um volume de banco já inicializado, mantenha as credenciais consistentes com as que foram configuradas anteriormente. Alterar as variáveis no `.env` não altera automaticamente as senhas de um banco existente.
 
@@ -39,22 +39,58 @@ Para habilitar as sugestões de filmes e gêneros, configure também `TMDB_API_K
 Inicie os serviços:
 
 ```bash
-./docker-compose.sh up -d --build
+docker compose up -d --build
 ```
 
 Na primeira execução, aguarde a instalação das dependências do Composer no container `app`. Para acompanhar os logs:
 
 ```bash
-./docker-compose.sh logs -f app
+docker compose logs -f app
 ```
 
 Quando a aplicação estiver pronta, gere a chave do Laravel e execute as migrations com os dados iniciais:
 
 ```bash
-./docker-compose.sh exec app php artisan key:generate
-./docker-compose.sh exec app php artisan migrate --seed
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --seed
 ```
 
 Acesse [http://localhost:8000](http://localhost:8000).
 
-O navegador solicitará e-mail e senha por
+O navegador solicitará e-mail e senha (autenticação HTTP Basic). O seed cria duas contas:
+
+| Perfil  | E-mail                | Senha  |
+|---------|-----------------------|--------|
+| Admin   | admin@locadora.test   | 123456 |
+| Cliente | cliente@locadora.test | 123456 |
+
+Essas contas servem apenas para desenvolvimento. Troque as senhas antes de publicar o sistema em qualquer lugar.
+
+## Serviços do Docker
+
+| Serviço     | Para que serve                                                      | Porta                |
+|-------------|---------------------------------------------------------------------|----------------------|
+| `app`       | Laravel (`php artisan serve`)                                       | 8000                 |
+| `scheduler` | Tarefas agendadas: expira reservas (a cada 5 min) e marca atrasos   | —                    |
+| `vite`      | Assets do front-end                                                 | 5173                 |
+| `db`        | MySQL 8                                                             | 3306 (só localhost)  |
+
+## TMDB
+
+Crie uma chave gratuita em https://www.themoviedb.org/settings/api e coloque no `.env`:
+
+```
+TMDB_API_KEY=sua-chave
+```
+
+Todo gênero é cadastrado com o ID do TMDB, para evitar duplicatas. Ao cadastrar um filme pela busca, se o gênero principal dele ainda não existir, a tela oferece adicioná-lo na hora.
+
+Se o certificado da rede bloquear a conexão SSL, use `TMDB_VERIFY_SSL=false`, apenas em desenvolvimento.
+
+## Testes
+
+```bash
+docker compose exec app php artisan test
+```
+
+Os testes usam SQLite em memória e não alteram o banco do Docker.
