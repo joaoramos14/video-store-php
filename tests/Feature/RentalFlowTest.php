@@ -203,14 +203,18 @@ class RentalFlowTest extends TestCase
         $this->assertSame(0, $movie->fresh()->stock);
     }
 
-    public function test_display_status_shows_expired_as_soon_as_the_deadline_passes(): void
+    public function test_display_status_shows_expired_after_the_command_runs(): void
     {
         $this->reserve($this->customer(), $this->movie());
         $rental = Rental::first();
 
         $this->assertSame('reserved', $rental->displayStatus());
 
+        // Passou do prazo: a tela mostra o que está gravado até o comando agendado rodar
         $this->travelTo(Carbon::parse(self::START)->addHours(25));
+        $this->assertSame('reserved', $rental->fresh()->displayStatus());
+
+        $this->artisan('rentals:expire-reservations')->assertSuccessful();
         $this->assertSame('expired', $rental->fresh()->displayStatus());
     }
 

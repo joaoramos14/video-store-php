@@ -43,20 +43,29 @@ class AdminRentalFilterTest extends TestCase
             ->assertDontSee('Reserva Expirada');
     }
 
-    public function test_expired_tab_includes_lapsed_reservations_not_yet_marked(): void
+    public function test_expired_tab_lists_only_reservations_marked_as_expired(): void
     {
         $this->list('expired')->assertOk()
             ->assertSee('Reserva Expirada')
-            ->assertSee('Reserva Vencida')
+            ->assertDontSee('Reserva Vencida')
             ->assertDontSee('Reserva Aberta')
             ->assertDontSee('Reserva Cancelada');
     }
 
-    public function test_reserved_tab_does_not_include_lapsed_reservations(): void
+    public function test_lapsed_reservation_stays_in_reserved_tab_until_the_command_runs(): void
     {
         $this->list('reserved')->assertOk()
             ->assertSee('Reserva Aberta')
+            ->assertSee('Reserva Vencida');
+
+        $this->artisan('rentals:expire-reservations')->assertSuccessful();
+
+        $this->list('reserved')->assertOk()
+            ->assertSee('Reserva Aberta')
             ->assertDontSee('Reserva Vencida');
+
+        $this->list('expired')->assertOk()
+            ->assertSee('Reserva Vencida');
     }
 
     public function test_late_tab_lists_active_rentals_past_the_due_date(): void
@@ -71,6 +80,24 @@ class AdminRentalFilterTest extends TestCase
         $this->list('active')->assertOk()
             ->assertSee('Dentro do Prazo')
             ->assertDontSee('Prazo Vencido');
+    }
+
+    public function test_sql_filter_matches_display_status_for_every_state(): void
+    {
+        $this->freezeTime();
+
+        Rental::factory()->create();
+        Rental::factory()->late()->create();
+        Rental::factory()->returned()->create();
+        // Reserva no limite do prazo: continua "reservada" até o comando agendado rodar
+        Rental::factory()->reserved()->create(['reserved_until' => now()]);
+
+        foreach (Rental::DISPLAY_STATES as $state) {
+            $expected = Rental::all()->filter(fn(Rental $r) => $r->displayStatus() === $state)->pluck('id')->sort()->values();
+            $actual = Rental::whereDisplayStatus($state)->pluck('id')->sort()->values();
+
+            $this->assertEquals($expected, $actual, "Estado {$state}");
+        }
     }
 
     public function test_the_new_tabs_are_shown(): void
