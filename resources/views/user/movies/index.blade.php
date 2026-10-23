@@ -3,8 +3,6 @@
 @section('title', 'Catálogo - 7 Rent')
 
 @php
-    // A capa pode ser uma URL completa ou um caminho do TMDB (/abc.jpg)
-    $coverUrl = fn($cover) => !$cover ? null : (str_starts_with($cover, 'http') ? $cover : "https://image.tmdb.org/t/p/w500{$cover}");
     $hasFilters = request()->filled('title') || request()->filled('genre_id') || request()->filled('year');
     $fieldClass = 'w-full bg-[#2c3440] border border-transparent rounded-[3px] px-3 py-2 text-sm text-white placeholder-[#678] focus:outline-none focus:border-[#53c7ff] focus:bg-[#14181c] transition-colors';
     $labelClass = 'block text-[11px] font-semibold uppercase tracking-[0.1em] text-[#9ab] mb-1.5';
@@ -92,8 +90,8 @@
                             <!-- Pôster -->
                             <div
                                 class="relative aspect-[2/3] rounded-[3px] overflow-hidden bg-[#2c3440] ring-1 ring-inset ring-white/15 group-hover:ring-2 group-hover:ring-[#53c7ff] group-focus-visible:ring-2 group-focus-visible:ring-[#53c7ff] transition-shadow">
-                                @if ($coverUrl($movie->cover))
-                                    <img src="{{ $coverUrl($movie->cover) }}" alt="Capa de {{ $movie->title }}"
+                                @if ($movie->cover_url)
+                                    <img src="{{ $movie->cover_url }}" alt="Capa de {{ $movie->title }}"
                                         loading="lazy" class="w-full h-full object-cover {{ $available ? '' : 'opacity-50 grayscale' }}">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center text-center text-sm text-[#678] px-4">

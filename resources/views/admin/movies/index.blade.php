@@ -3,8 +3,6 @@
 @section('title', 'Filmes - 7 Rent')
 
 @php
-    // A capa pode ser uma URL completa ou um caminho do TMDB (/abc.jpg)
-    $coverUrl = fn($cover) => !$cover ? null : (str_starts_with($cover, 'http') ? $cover : "https://image.tmdb.org/t/p/w92{$cover}");
 @endphp
 
 @section('content')
@@ -41,8 +39,8 @@
                         <tr class="hover:bg-[#2c3440]/50 transition-colors">
                             <td class="py-3 px-4">
                                 <div class="flex items-center gap-4">
-                                    @if ($coverUrl($movie->cover))
-                                        <img src="{{ $coverUrl($movie->cover) }}" alt="Capa de {{ $movie->title }}"
+                                    @if ($movie->cover_url)
+                                        <img src="{{ $movie->cover_url }}" alt="Capa de {{ $movie->title }}"
                                             loading="lazy"
                                             class="w-10 aspect-[2/3] object-cover rounded-[3px] ring-1 ring-inset ring-white/15 bg-[#2c3440]">
                                     @else
