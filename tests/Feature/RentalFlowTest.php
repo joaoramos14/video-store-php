@@ -22,23 +22,12 @@ class RentalFlowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();   // as telas usam @vite e os assets podem não estar compilados
         Carbon::setTestNow(self::START);
     }
 
     private function movie(int $stock = 2, float $price = 10): Movie
     {
         return Movie::factory()->create(['stock' => $stock, 'daily_price' => $price]);
-    }
-
-    private function customer(): User
-    {
-        return User::factory()->create(['is_admin' => false]);
-    }
-
-    private function admin(): User
-    {
-        return User::factory()->create(['is_admin' => true]);
     }
 
     private function reserve(User $user, Movie $movie, int $days = 3)

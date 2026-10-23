@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Genre;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,11 +12,6 @@ use Tests\TestCase;
 class GenreStoreTest extends TestCase
 {
     use RefreshDatabase;
-
-    private function admin(): User
-    {
-        return User::factory()->create(['is_admin' => true]);
-    }
 
     public function test_json_request_creates_the_genre_and_returns_it(): void
     {
@@ -101,7 +95,7 @@ class GenreStoreTest extends TestCase
 
     public function test_customers_cannot_create_genres(): void
     {
-        $this->actingAs(User::factory()->create(['is_admin' => false]))
+        $this->actingAs($this->customer())
             ->postJson(route('admin.genres.store'), ['tmdb_id' => 28, 'name' => 'Ação'])
             ->assertForbidden();
 

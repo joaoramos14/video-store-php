@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Movie;
 use App\Models\Rental;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +17,6 @@ class AdminRentalFilterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutVite();
 
         $title = fn(string $t) => Movie::factory()->create(['title' => $t])->id;
 
@@ -30,7 +28,7 @@ class AdminRentalFilterTest extends TestCase
 
     private function list(?string $status)
     {
-        return $this->actingAs(User::factory()->create(['is_admin' => true]))
+        return $this->actingAs($this->admin())
             ->get(route('admin.rentals.index', $status ? ['status' => $status] : []));
     }
 
