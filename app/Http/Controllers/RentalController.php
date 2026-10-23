@@ -47,10 +47,6 @@ class RentalController extends Controller
     /** O cliente desiste da reserva. */
     public function cancel(Rental $rental)
     {
-        if ($rental->user_id !== Auth::id()) {
-            abort(403);
-        }
-
         try {
             $this->rentals->cancel($rental);
         } catch (RentalException $e) {
