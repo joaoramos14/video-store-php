@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,6 +36,12 @@ class Movie extends Model
             'stock'       => 'integer',
             'daily_price' => 'decimal:2',
         ];
+    }
+
+    /** URL da capa para as views. A busca no TMDB grava a URL completa; qualquer outro valor é ignorado. */
+    protected function coverUrl(): Attribute
+    {
+        return Attribute::get(fn() => str_starts_with((string) $this->cover, 'http') ? $this->cover : null);
     }
 
     public function genre(): BelongsTo

@@ -30,6 +30,7 @@ return [
     'required' => 'O campo :attribute é obrigatório.',
     'string'   => 'O campo :attribute deve ser um texto.',
     'unique'   => 'Este :attribute já está em uso.',
+    'url'      => 'O campo :attribute deve ser uma URL válida.',
 
     'attributes' => [
         'days'        => 'dias',

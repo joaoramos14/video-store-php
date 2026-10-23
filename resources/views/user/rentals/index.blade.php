@@ -2,10 +2,6 @@
 
 @section('title', 'Meus aluguéis - 7 Rent')
 
-@php
-    $coverUrl = fn($cover) => !$cover ? null : (str_starts_with($cover, 'http') ? $cover : "https://image.tmdb.org/t/p/w154{$cover}");
-@endphp
-
 @section('content')
     <div>
 
@@ -39,8 +35,8 @@
                         <div class="flex gap-4">
                             <!-- Capa -->
                             <a href="{{ route('movies.show', $rental->movie) }}" class="shrink-0">
-                                @if ($coverUrl($rental->movie->cover))
-                                    <img src="{{ $coverUrl($rental->movie->cover) }}" alt="Capa de {{ $rental->movie->title }}"
+                                @if ($rental->movie->cover_url)
+                                    <img src="{{ $rental->movie->cover_url }}" alt="Capa de {{ $rental->movie->title }}"
                                         loading="lazy"
                                         class="w-16 aspect-[2/3] object-cover rounded-[3px] ring-1 ring-inset ring-white/15 bg-[#2c3440] {{ in_array($state, ['cancelled', 'expired']) ? 'opacity-50 grayscale' : '' }}">
                                 @else

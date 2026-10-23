@@ -3,7 +3,6 @@
 @section('title', $movie->title . ' - 7 Rent')
 
 @php
-    $coverUrl = !$movie->cover ? null : (str_starts_with($movie->cover, 'http') ? $movie->cover : "https://image.tmdb.org/t/p/w500{$movie->cover}");
     $available = $movie->stock > 0;
     $avg = $movie->reviews_avg_rating;
     $maxCount = max($distribution->max() ?? 0, 1);
@@ -23,8 +22,8 @@
 
             <!-- Capa -->
             <div class="w-[150px] sm:w-[180px] aspect-[2/3] rounded-[3px] overflow-hidden bg-[#2c3440] ring-1 ring-inset ring-white/15">
-                @if ($coverUrl)
-                    <img src="{{ $coverUrl }}" alt="Capa de {{ $movie->title }}" class="w-full h-full object-cover">
+                @if ($movie->cover_url)
+                    <img src="{{ $movie->cover_url }}" alt="Capa de {{ $movie->title }}" class="w-full h-full object-cover">
                 @else
                     <div class="w-full h-full flex items-center justify-center text-center text-sm text-[#678] px-4">
                         {{ $movie->title }}

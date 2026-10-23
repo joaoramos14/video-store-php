@@ -131,14 +131,13 @@
 </div>
 
 <script>
-    // Prévia da capa (aceita URL completa ou caminho do TMDB)
+    // Prévia da capa (mesma regra do Movie::coverUrl: só URL completa)
     const coverInput = document.getElementById('f_cover');
     const coverPreview = document.getElementById('cover_preview');
     const coverEmpty = document.getElementById('cover_empty');
 
     function coverSrc(value) {
-        if (!value) return null;
-        return value.startsWith('http') ? value : `https://image.tmdb.org/t/p/w342${value}`;
+        return value.startsWith('http') ? value : null;
     }
 
     function refreshCover() {
