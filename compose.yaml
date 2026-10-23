@@ -10,10 +10,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/var/www
-      # Descomente se tiver o certificado da empresa em ./certs/corp-ca.crt
-      # - ./certs/corp-ca.crt:/usr/local/share/ca-certificates/corp-ca.crt:ro
-    # environment:
-    #   SSL_CERT_FILE: /usr/local/share/ca-certificates/corp-ca.crt
+    # Certificado da empresa: veja compose.override.example.yaml
     depends_on:
       db:
         condition: service_healthy

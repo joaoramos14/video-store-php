@@ -85,7 +85,17 @@ TMDB_API_KEY=sua-chave
 
 Todo gênero é cadastrado com o ID do TMDB, para evitar duplicatas. Ao cadastrar um filme pela busca, se o gênero principal dele ainda não existir, a tela oferece adicioná-lo na hora.
 
-Se o certificado da rede bloquear a conexão SSL, use `TMDB_VERIFY_SSL=false`, apenas em desenvolvimento.
+Se o certificado da rede bloquear a conexão SSL, configure o certificado da empresa (veja a seção abaixo). Use `TMDB_VERIFY_SSL=false` apenas em último caso e só em desenvolvimento.
+
+## Rede com certificado da empresa
+
+Se você está atrás de um proxy que usa certificado próprio, o Composer, o npm e a chamada ao TMDB falham com erro de SSL. Para resolver:
+
+```bash
+cp compose.override.example.yaml compose.override.yaml
+```
+
+Coloque o certificado (PEM, extensão `.crt`) em `certs/corp-ca.crt` e suba os serviços novamente. O `compose.override.yaml` e o certificado ficam fora do Git.
 
 ## Testes
 

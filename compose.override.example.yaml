@@ -1,0 +1,38 @@
+# Só para quem está atrás de proxy/rede com certificado próprio da empresa.
+#
+# Como usar:
+#   1. Coloque o certificado (formato PEM, extensão .crt) em ./certs/corp-ca.crt
+#   2. cp compose.override.example.yaml compose.override.yaml
+#   3. docker compose up -d --build
+#
+# O Docker Compose lê o compose.override.yaml automaticamente, e ele está no
+# .gitignore. Se o certificado não existir, o Docker cria uma PASTA com esse
+# nome no lugar e o mount não funciona.
+#
+# Atenção: o "command" abaixo substitui o do compose.yaml (não é mesclado).
+# Se o comando original mudar, atualize aqui também.
+
+services:
+  app:
+    volumes:
+      - ./certs/corp-ca.crt:/usr/local/share/ca-certificates/corp-ca.crt:ro
+    command:
+      - sh
+      - -c
+      - "update-ca-certificates && git config --global --add safe.directory /var/www && composer install --no-interaction --no-progress && php artisan serve --host=0.0.0.0 --port=8000"
+
+  scheduler:
+    volumes:
+      - ./certs/corp-ca.crt:/usr/local/share/ca-certificates/corp-ca.crt:ro
+    command:
+      - sh
+      - -c
+      - "update-ca-certificates && until [ -f vendor/autoload.php ]; do sleep 3; done && php artisan schedule:work"
+
+  # O Node não usa o bundle do sistema: precisa de NODE_EXTRA_CA_CERTS
+  # para o "npm install" funcionar atrás do proxy.
+  vite:
+    volumes:
+      - ./certs/corp-ca.crt:/certs/corp-ca.crt:ro
+    environment:
+      NODE_EXTRA_CA_CERTS: /certs/corp-ca.crt
