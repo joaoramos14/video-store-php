@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Genre;
 use App\Models\Movie;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,7 +35,7 @@ class MovieCoverTest extends TestCase
 
     public function test_cover_must_be_a_url(): void
     {
-        $this->actingAs(User::factory()->create(['is_admin' => true]))
+        $this->actingAs($this->admin())
             ->post(route('admin.movies.store'), $this->payload(['cover' => '/m.jpg']))
             ->assertSessionHasErrors(['cover' => 'O campo capa deve ser uma URL válida.']);
 

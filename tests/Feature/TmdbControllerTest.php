@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -18,11 +17,6 @@ class TmdbControllerTest extends TestCase
     {
         parent::setUp();
         config(['services.tmdb.key' => 'chave-de-teste']);
-    }
-
-    private function admin(): User
-    {
-        return User::factory()->create(['is_admin' => true]);
     }
 
     public function test_search_without_a_key_explains_what_is_missing(): void
@@ -120,7 +114,7 @@ class TmdbControllerTest extends TestCase
 
     public function test_customers_cannot_use_the_tmdb_routes(): void
     {
-        $this->actingAs(User::factory()->create(['is_admin' => false]))
+        $this->actingAs($this->customer())
             ->getJson(route('admin.tmdb.search', ['query' => 'matrix']))
             ->assertForbidden();
     }
