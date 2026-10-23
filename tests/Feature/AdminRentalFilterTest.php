@@ -73,6 +73,24 @@ class AdminRentalFilterTest extends TestCase
             ->assertDontSee('Prazo Vencido');
     }
 
+    public function test_sql_filter_matches_display_status_for_every_state(): void
+    {
+        $this->freezeTime();
+
+        Rental::factory()->create();
+        Rental::factory()->late()->create();
+        Rental::factory()->returned()->create();
+        // Limite exato: no instante do prazo, a reserva já conta como vencida
+        Rental::factory()->reserved()->create(['reserved_until' => now()]);
+
+        foreach (Rental::DISPLAY_STATES as $state) {
+            $expected = Rental::all()->filter(fn(Rental $r) => $r->displayStatus() === $state)->pluck('id')->sort()->values();
+            $actual = Rental::whereDisplayStatus($state)->pluck('id')->sort()->values();
+
+            $this->assertEquals($expected, $actual, "Estado {$state}");
+        }
+    }
+
     public function test_the_new_tabs_are_shown(): void
     {
         $this->list(null)->assertOk()

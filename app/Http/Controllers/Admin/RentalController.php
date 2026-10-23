@@ -19,17 +19,8 @@ class RentalController extends Controller
         $status = $request->query('status');
 
         $rentals = Rental::with(['user', 'movie'])
-            ->when($status === 'reserved', fn($q) => $q->where('status', Rental::RESERVED)->where('reserved_until', '>=', now()))
-            ->when($status === 'active', fn($q) => $q->where('status', Rental::ACTIVE)->where('due_at', '>=', now()))
-            // Igual ao isLate(): o atraso não é gravado, é calculado pelo prazo
-            ->when($status === 'late', fn($q) => $q->where('status', Rental::ACTIVE)->where('due_at', '<', now()))
-            ->when($status === 'returned', fn($q) => $q->where('status', Rental::RETURNED))
-            ->when($status === 'cancelled', fn($q) => $q->where('status', Rental::CANCELLED))
-            // Igual ao displayStatus(): reserva com prazo vencido já conta como expirada
-            ->when($status === 'expired', fn($q) => $q->where(function ($q) {
-                $q->where('status', Rental::EXPIRED)
-                    ->orWhere(fn($q) => $q->where('status', Rental::RESERVED)->where('reserved_until', '<', now()));
-            }))
+            // As abas seguem o displayStatus(): atraso e reserva vencida são calculados pelo prazo
+            ->when(in_array($status, Rental::DISPLAY_STATES, true), fn($q) => $q->whereDisplayStatus($status))
             ->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();

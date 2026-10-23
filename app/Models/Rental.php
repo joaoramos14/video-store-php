@@ -21,6 +21,9 @@ class Rental extends Model
     public const CANCELLED = 'cancelled';
     public const EXPIRED   = 'expired';
 
+    /** Estados que displayStatus() pode devolver (e que whereDisplayStatus() aceita). */
+    public const DISPLAY_STATES = [self::RESERVED, self::ACTIVE, self::LATE, self::RETURNED, self::CANCELLED, self::EXPIRED];
+
     protected $fillable = [
         'user_id',
         'movie_id',
@@ -64,19 +67,35 @@ class Rental extends Model
         return $this->hasOne(Review::class);
     }
 
+    /** Reservas ainda dentro do prazo de retirada. Mesma regra de isPickupOpen(). */
+    public function scopePickupOpen(Builder $query): Builder
+    {
+        return $query->where('status', self::RESERVED)->where('reserved_until', '>', now());
+    }
+
     /** Reservas cujo prazo de retirada já passou, mas que ainda não foram marcadas como expiradas. */
     public function scopeLapsedReservations(Builder $query): Builder
     {
-        return $query->where('status', self::RESERVED)->where('reserved_until', '<', now());
+        return $query->where('status', self::RESERVED)->where('reserved_until', '<=', now());
     }
 
     /** Aluguéis que impedem uma nova reserva do mesmo filme: reserva dentro do prazo ou filme com o cliente. */
     public function scopeBlocking(Builder $query): Builder
     {
-        return $query->where(function (Builder $q) {
-            $q->where(fn(Builder $r) => $r->where('status', self::RESERVED)->where('reserved_until', '>=', now()))
-                ->orWhere('status', self::ACTIVE);
-        });
+        return $query->where(fn(Builder $q) => $q->pickupOpen()->orWhere('status', self::ACTIVE));
+    }
+
+    /** Versão SQL de displayStatus(): ao mudar uma, mude a outra. */
+    public function scopeWhereDisplayStatus(Builder $query, string $state): Builder
+    {
+        return match ($state) {
+            self::RESERVED => $query->pickupOpen(),
+            self::ACTIVE   => $query->where('status', self::ACTIVE)->where('due_at', '>=', now()),
+            self::LATE     => $query->where('status', self::ACTIVE)->where('due_at', '<', now()),
+            self::EXPIRED  => $query->where(fn(Builder $q) => $q->where('status', self::EXPIRED)
+                ->orWhere(fn(Builder $r) => $r->lapsedReservations())),
+            default        => $query->where('status', $state),
+        };
     }
 
     public function isReserved(): bool
@@ -111,6 +130,7 @@ class Rental extends Model
     /**
      * Estado para exibir nas telas: reserved, active, late, returned, cancelled ou expired.
      * Uma reserva com prazo vencido aparece como expirada mesmo antes da tarefa agendada rodar.
+     * A versão SQL desta regra é scopeWhereDisplayStatus(): ao mudar uma, mude a outra.
      */
     public function displayStatus(): string
     {

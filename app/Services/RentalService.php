@@ -161,7 +161,7 @@ class RentalService
                 $rental = Rental::lockForUpdate()->find($id);
 
                 // Pode ter sido retirada ou cancelada enquanto esperava o lock
-                if ($rental && $rental->isReserved() && $rental->reserved_until->isPast()) {
+                if ($rental && $rental->isReserved() && !$rental->isPickupOpen()) {
                     $this->closeReservation($rental, Rental::EXPIRED);
                     $expired++;
                 }
