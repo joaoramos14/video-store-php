@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Genre;
+use App\Services\TmdbClient;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class GenreController extends Controller
 {
@@ -17,18 +17,13 @@ class GenreController extends Controller
         return view('admin.genres.index', compact('genres'));
     }
 
-    public function create()
+    public function create(TmdbClient $tmdb)
     {
         $tmdbGenres = [];
 
-        if (config('services.tmdb.key')) {
+        if ($tmdb->hasKey()) {
             try {
-                $response = Http::timeout(10)
-                    ->withOptions(['verify' => config('services.tmdb.verify', true)])
-                    ->get('https://api.themoviedb.org/3/genre/movie/list', [
-                        'api_key'  => config('services.tmdb.key'),
-                        'language' => 'pt-BR',
-                    ]);
+                $response = $tmdb->get('/genre/movie/list');
 
                 if ($response->successful()) {
                     $tmdbGenres = $response->json()['genres'] ?? [];
