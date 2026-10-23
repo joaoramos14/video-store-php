@@ -13,7 +13,8 @@ class RentalFactory extends Factory
     public function definition(): array
     {
         $days     = $this->faker->numberBetween(1, 7);
-        $rentedAt = now()->subDays($this->faker->numberBetween(0, 3));
+        // Retirado há menos dias do que o aluguel dura: o padrão é um aluguel dentro do prazo
+        $rentedAt = now()->subDays($this->faker->numberBetween(0, $days - 1));
 
         return [
             'user_id'        => User::factory(),
