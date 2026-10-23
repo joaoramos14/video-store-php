@@ -11,11 +11,6 @@ class ReviewController extends Controller
 {
     public function store(Request $request, Rental $rental)
     {
-        // Garante que o aluguel pertence ao usuário logado
-        if ($rental->user_id !== Auth::id()) {
-            abort(403);
-        }
-
         // Reservas canceladas, expiradas ou ainda não retiradas não podem ser avaliadas
         if (!$rental->wasPickedUp()) {
             return back()->with('error', 'Você só pode avaliar filmes que já retirou na loja.');

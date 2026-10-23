@@ -12,8 +12,8 @@ Route::middleware('auth.basic')->group(function () {
     Route::get('/movies/{movie}', [MovieController::class, 'show'])->name('movies.show');
     Route::get('/my-rentals', [RentalController::class, 'index'])->name('rentals.index');
     Route::post('/movies/{movie}/rent', [RentalController::class, 'store'])->name('rentals.store');
-    Route::post('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('rentals.cancel');
-    Route::post('/rentals/{rental}/review', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('rentals.cancel')->can('own', 'rental');
+    Route::post('/rentals/{rental}/review', [ReviewController::class, 'store'])->name('reviews.store')->can('own', 'rental');
 
     // Rotas admin
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

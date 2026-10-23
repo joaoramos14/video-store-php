@@ -366,6 +366,18 @@ class RentalFlowTest extends TestCase
         $this->assertSame(0, \App\Models\Review::count());
     }
 
+    public function test_cannot_review_someone_elses_rental(): void
+    {
+        $this->reserve($this->customer(), $this->movie());
+        $this->actingAs($this->admin())->post(route('admin.rentals.pickup', Rental::first()));
+
+        $this->actingAs($this->customer())
+            ->post(route('reviews.store', Rental::first()), ['rating' => 5])
+            ->assertForbidden();
+
+        $this->assertSame(0, \App\Models\Review::count());
+    }
+
     public function test_review_is_accepted_once_after_pickup(): void
     {
         $user = $this->customer();
