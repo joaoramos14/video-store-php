@@ -33,7 +33,7 @@ class RentalFactory extends Factory
     public function reserved(): static
     {
         return $this->state(fn() => [
-            'reserved_until' => now()->addHours((int) config('rentals.reservation_hours', 24)),
+            'reserved_until' => now()->addHours(config('rentals.reservation_hours')),
             'rented_at'      => null,
             'due_at'         => null,
             'status'         => Rental::RESERVED,
