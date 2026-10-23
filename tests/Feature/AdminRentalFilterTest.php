@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Abas "Cancelados" e "Expirados" da lista de aluguéis do admin.
+ * Abas da lista de aluguéis do admin que dependem de prazo ou de desvios do fluxo.
  */
 class AdminRentalFilterTest extends TestCase
 {
@@ -57,6 +57,20 @@ class AdminRentalFilterTest extends TestCase
         $this->list('reserved')->assertOk()
             ->assertSee('Reserva Aberta')
             ->assertDontSee('Reserva Vencida');
+    }
+
+    public function test_late_tab_lists_active_rentals_past_the_due_date(): void
+    {
+        Rental::factory()->create(['movie_id' => Movie::factory()->create(['title' => 'Dentro do Prazo'])->id]);
+        Rental::factory()->late()->create(['movie_id' => Movie::factory()->create(['title' => 'Prazo Vencido'])->id]);
+
+        $this->list('late')->assertOk()
+            ->assertSee('Prazo Vencido')
+            ->assertDontSee('Dentro do Prazo');
+
+        $this->list('active')->assertOk()
+            ->assertSee('Dentro do Prazo')
+            ->assertDontSee('Prazo Vencido');
     }
 
     public function test_the_new_tabs_are_shown(): void

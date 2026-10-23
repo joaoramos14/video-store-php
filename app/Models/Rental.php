@@ -13,9 +13,10 @@ class Rental extends Model
     use HasFactory;
 
     // Fluxo: reserved -> active -> returned. Desvios: cancelled (cliente desistiu) e expired (ninguém retirou).
+    // O atraso não é gravado: um aluguel active com prazo vencido é calculado por isLate()/displayStatus().
     public const RESERVED  = 'reserved';
     public const ACTIVE    = 'active';
-    public const LATE      = 'late';      // gravado pela tarefa agendada (rentals:mark-late); isLate() também calcula pelo prazo
+    public const LATE      = 'late';      // só para exibição (displayStatus()); nunca é gravado no banco
     public const RETURNED  = 'returned';
     public const CANCELLED = 'cancelled';
     public const EXPIRED   = 'expired';
@@ -74,7 +75,7 @@ class Rental extends Model
     {
         return $query->where(function (Builder $q) {
             $q->where(fn(Builder $r) => $r->where('status', self::RESERVED)->where('reserved_until', '>=', now()))
-                ->orWhereIn('status', [self::ACTIVE, self::LATE]);
+                ->orWhere('status', self::ACTIVE);
         });
     }
 
@@ -92,20 +93,19 @@ class Rental extends Model
     /** O filme está com o cliente (retirado e ainda não devolvido). */
     public function isOut(): bool
     {
-        return in_array($this->status, [self::ACTIVE, self::LATE], true);
+        return $this->status === self::ACTIVE;
     }
 
     /** Filme retirado e com o prazo de devolução vencido. */
     public function isLate(): bool
     {
-        return $this->status === self::LATE
-            || ($this->status === self::ACTIVE && $this->due_at?->isPast());
+        return $this->isOut() && $this->due_at?->isPast();
     }
 
     /** O cliente chegou a retirar o filme (só nesses casos faz sentido avaliar). */
     public function wasPickedUp(): bool
     {
-        return in_array($this->status, [self::ACTIVE, self::LATE, self::RETURNED], true);
+        return in_array($this->status, [self::ACTIVE, self::RETURNED], true);
     }
 
     /**

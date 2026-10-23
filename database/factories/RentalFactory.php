@@ -76,7 +76,7 @@ class RentalFactory extends Factory
             'rented_at' => now()->subDays(10),
             'due_at'    => now()->subDays(3),
             'days'      => 7,
-            'status'    => Rental::LATE,
+            'status'    => Rental::ACTIVE,
         ]);
     }
 }
