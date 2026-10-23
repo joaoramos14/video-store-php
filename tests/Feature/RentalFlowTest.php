@@ -313,6 +313,20 @@ class RentalFlowTest extends TestCase
         $this->assertEquals('15.00', Rental::first()->late_fee);       // 1 * 10 * 1,5
     }
 
+    public function test_overdue_rental_shows_as_late_without_changing_the_stored_status(): void
+    {
+        $movie = $this->movie(stock: 1);
+        $this->reserve($this->customer(), $movie, 1);
+        $this->actingAs($this->admin())->post(route('admin.rentals.pickup', Rental::first()));
+
+        $this->travelTo(now()->addDays(2));
+
+        $rental = Rental::first();
+        $this->assertSame(Rental::ACTIVE, $rental->status);
+        $this->assertTrue($rental->isLate());
+        $this->assertSame(Rental::LATE, $rental->displayStatus());
+    }
+
     public function test_cannot_return_a_movie_that_was_not_picked_up(): void
     {
         $movie = $this->movie(stock: 2);

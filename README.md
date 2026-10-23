@@ -71,7 +71,7 @@ Essas contas servem apenas para desenvolvimento. Troque as senhas antes de publi
 | Serviço     | Para que serve                                                      | Porta                |
 |-------------|---------------------------------------------------------------------|----------------------|
 | `app`       | Laravel (`php artisan serve`)                                       | 8000                 |
-| `scheduler` | Tarefas agendadas: expira reservas (a cada 5 min) e marca atrasos   | —                    |
+| `scheduler` | Tarefas agendadas: expira reservas (a cada 5 min)                   | —                    |
 | `vite`      | Assets do front-end                                                 | 5173                 |
 | `db`        | MySQL 8                                                             | 3306 (só localhost)  |
 
