@@ -43,7 +43,7 @@ class RentalService
                 'movie_id'       => $locked->id,
                 'days'           => $days,
                 'total_price'    => $locked->daily_price * $days,
-                'reserved_until' => now()->addHours((int) config('rentals.reservation_hours', 24)),
+                'reserved_until' => now()->addHours(config('rentals.reservation_hours')),
                 'status'         => Rental::RESERVED,
             ]);
 
