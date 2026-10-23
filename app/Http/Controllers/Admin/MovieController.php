@@ -9,6 +9,22 @@ use Illuminate\Http\Request;
 
 class MovieController extends Controller
 {
+    /** Regras comuns ao cadastro e à edição. */
+    private function rules(): array
+    {
+        return [
+            'title'       => 'required|string|max:255',
+            'director'    => 'nullable|string|max:255',
+            'synopsis'    => 'nullable|string',
+            'year'        => 'required|integer|between:1888,' . date('Y'),
+            'duration'    => 'required|integer|min:1',
+            'cover'       => 'nullable|url|max:255',
+            'stock'       => 'required|integer|min:0',
+            'daily_price' => 'required|numeric|min:0',
+            'genre_id'    => 'required|exists:genres,id',
+        ];
+    }
+
     public function index()
     {
         $movies = Movie::with('genre')->orderBy('title')->paginate(10);
@@ -24,16 +40,9 @@ class MovieController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title'       => 'required|string|max:255',
-            'director'    => 'nullable|string|max:255',
-            'synopsis'    => 'nullable|string',
-            'year'        => 'required|integer|between:1888,' . date('Y'),
-            'duration'    => 'required|integer|min:1',
-            'cover'       => 'nullable|url|max:255',
-            'stock'       => 'required|integer|min:0',
-            'daily_price' => 'required|numeric|min:0',
-            'genre_id'    => 'required|exists:genres,id',
-            'tmdb_id'     => 'nullable|integer|unique:movies,tmdb_id',
+            ...$this->rules(),
+            // O tmdb_id só é definido no cadastro, pela busca no TMDB
+            'tmdb_id' => 'nullable|integer|unique:movies,tmdb_id',
         ]);
 
         Movie::create($data);
@@ -49,17 +58,7 @@ class MovieController extends Controller
 
     public function update(Request $request, Movie $movie)
     {
-        $data = $request->validate([
-            'title'       => 'required|string|max:255',
-            'director'    => 'nullable|string|max:255',
-            'synopsis'    => 'nullable|string',
-            'year'        => 'required|integer|between:1888,' . date('Y'),
-            'duration'    => 'required|integer|min:1',
-            'cover'       => 'nullable|url|max:255',
-            'stock'       => 'required|integer|min:0',
-            'daily_price' => 'required|numeric|min:0',
-            'genre_id'    => 'required|exists:genres,id',
-        ]);
+        $data = $request->validate($this->rules());
 
         $movie->update($data);
 
