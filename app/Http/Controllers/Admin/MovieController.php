@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Genre;
 use App\Models\Movie;
+use App\Models\PriceTier;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -13,28 +14,29 @@ class MovieController extends Controller
     private function rules(): array
     {
         return [
-            'title'       => 'required|string|max:255',
-            'director'    => 'nullable|string|max:255',
-            'synopsis'    => 'nullable|string',
-            'year'        => 'required|integer|between:1888,' . date('Y'),
-            'duration'    => 'required|integer|min:1',
-            'cover'       => 'nullable|url|max:255',
-            'stock'       => 'required|integer|min:0',
-            'daily_price' => 'required|numeric|min:0',
-            'genre_id'    => 'required|exists:genres,id',
+            'title'         => 'required|string|max:255',
+            'director'      => 'nullable|string|max:255',
+            'synopsis'      => 'nullable|string',
+            'year'          => 'required|integer|between:1888,' . date('Y'),
+            'duration'      => 'required|integer|min:1',
+            'cover'         => 'nullable|url|max:255',
+            'stock'         => 'required|integer|min:0',
+            'price_tier_id' => 'required|exists:price_tiers,id',
+            'genre_id'      => 'required|exists:genres,id',
         ];
     }
 
     public function index()
     {
-        $movies = Movie::with('genre')->orderBy('title')->paginate(10);
+        $movies = Movie::with(['genre', 'priceTier'])->orderBy('title')->paginate(10);
         return view('admin.movies.index', compact('movies'));
     }
 
     public function create()
     {
         $genres = Genre::orderBy('name')->get();
-        return view('admin.movies.create', compact('genres'));
+        $priceTiers = PriceTier::orderByDesc('daily_price')->get();
+        return view('admin.movies.create', compact('genres', 'priceTiers'));
     }
 
     public function store(Request $request)
@@ -53,7 +55,8 @@ class MovieController extends Controller
     public function edit(Movie $movie)
     {
         $genres = Genre::orderBy('name')->get();
-        return view('admin.movies.edit', compact('movie', 'genres'));
+        $priceTiers = PriceTier::orderByDesc('daily_price')->get();
+        return view('admin.movies.edit', compact('movie', 'genres', 'priceTiers'));
     }
 
     public function update(Request $request, Movie $movie)

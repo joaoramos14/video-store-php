@@ -84,11 +84,17 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-                <label for="f_daily_price" class="{{ $labelClass }}">Diária (R$)</label>
-                <input type="number" name="daily_price" id="f_daily_price" required step="0.01" min="0"
-                    value="{{ old('daily_price', $movie?->daily_price) }}" placeholder="0,00"
-                    class="{{ $inputClass }} tabular-nums">
-                @error('daily_price')
+                <label for="f_price_tier_id" class="{{ $labelClass }}">Faixa de preço</label>
+                <select name="price_tier_id" id="f_price_tier_id" required class="{{ $inputClass }}">
+                    <option value="">Selecione</option>
+                    @foreach ($priceTiers as $tier)
+                        <option value="{{ $tier->id }}"
+                            @selected((string) old('price_tier_id', $movie?->price_tier_id) === (string) $tier->id)>
+                            {{ $tier->name }} (R$ {{ number_format($tier->daily_price, 2, ',', '.') }}/dia)
+                        </option>
+                    @endforeach
+                </select>
+                @error('price_tier_id')
                     <p class="{{ $errorClass }}">{{ $message }}</p>
                 @enderror
             </div>

@@ -57,7 +57,7 @@
                             </td>
                             <td class="py-3 px-4 text-[#9ab]">{{ $movie->genre?->name ?? '—' }}</td>
                             <td class="py-3 px-4 text-right text-[#9ab] tabular-nums whitespace-nowrap">
-                                R$ {{ number_format($movie->daily_price, 2, ',', '.') }}</td>
+                                R$ {{ number_format($movie->priceTier->daily_price, 2, ',', '.') }}</td>
                             <td class="py-3 px-4 text-center">
                                 <span
                                     class="inline-block min-w-[2.5rem] text-xs px-2.5 py-0.5 rounded-[3px] tabular-nums {{ $movie->stock > 0 ? 'bg-[#2c3440] text-[#9ab]' : 'bg-[#ff5b5b]/15 text-[#ff9b9b]' }}">
