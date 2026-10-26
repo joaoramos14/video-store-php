@@ -16,6 +16,7 @@ class Movie extends Model
     protected $fillable = [
         'tmdb_id',
         'genre_id',
+        'price_tier_id',
         'title',
         'director',
         'synopsis',
@@ -23,18 +24,17 @@ class Movie extends Model
         'duration',
         'cover',
         'stock',
-        'daily_price',
     ];
 
     protected function casts(): array
     {
         return [
-            'tmdb_id'     => 'integer',
-            'genre_id'    => 'integer',
-            'year'        => 'integer',
-            'duration'    => 'integer',
-            'stock'       => 'integer',
-            'daily_price' => 'decimal:2',
+            'tmdb_id'       => 'integer',
+            'genre_id'      => 'integer',
+            'price_tier_id' => 'integer',
+            'year'          => 'integer',
+            'duration'      => 'integer',
+            'stock'         => 'integer',
         ];
     }
 
@@ -47,6 +47,11 @@ class Movie extends Model
     public function genre(): BelongsTo
     {
         return $this->belongsTo(Genre::class);
+    }
+
+    public function priceTier(): BelongsTo
+    {
+        return $this->belongsTo(PriceTier::class);
     }
 
     public function rentals(): HasMany

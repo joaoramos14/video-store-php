@@ -18,9 +18,9 @@ class MovieController extends Controller
             'year'     => 'nullable|integer',
         ]);
 
-        // with('genre') e withAvg evitam o N+1: tudo vem em poucas queries,
+        // with() e withAvg evitam o N+1: tudo vem em poucas queries,
         // em vez de uma consulta de gênero e uma de média por filme.
-        $movies = Movie::with('genre')
+        $movies = Movie::with(['genre', 'priceTier'])
             ->withAvg('reviews', 'rating')
             ->when($request->title, fn($q, $t) => $q->where('title', 'like', "%{$t}%"))
             ->when($request->genre_id, fn($q, $g) => $q->where('genre_id', $g))
@@ -38,7 +38,7 @@ class MovieController extends Controller
 
     public function show(Movie $movie)
     {
-        $movie->load('genre')->loadAvg('reviews', 'rating')->loadCount('reviews');
+        $movie->load(['genre', 'priceTier'])->loadAvg('reviews', 'rating')->loadCount('reviews');
 
         // Quantas avaliações de cada nota (1 a 5), para o gráfico de barras
         $distribution = $movie->reviews()

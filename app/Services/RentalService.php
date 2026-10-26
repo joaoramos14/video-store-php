@@ -21,7 +21,7 @@ class RentalService
     {
         // A transação com lock no filme impede que duas pessoas reservem a última cópia ao mesmo tempo
         return DB::transaction(function () use ($user, $movie, $days) {
-            $locked = Movie::lockForUpdate()->findOrFail($movie->id);
+            $locked = Movie::with('priceTier')->lockForUpdate()->findOrFail($movie->id);
 
             $alreadyHasIt = Rental::where('user_id', $user->id)
                 ->where('movie_id', $locked->id)
@@ -40,7 +40,7 @@ class RentalService
                 'user_id'        => $user->id,
                 'movie_id'       => $locked->id,
                 'days'           => $days,
-                'total_price'    => $locked->daily_price * $days,
+                'total_price'    => $locked->priceTier->daily_price * $days,
                 'reserved_until' => now()->addHours(config('rentals.reservation_hours')),
                 'status'         => Rental::RESERVED,
             ]);

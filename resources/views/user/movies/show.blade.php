@@ -107,7 +107,7 @@
                         <!-- Preço e disponibilidade -->
                         <div class="lg:min-w-[190px]">
                             <p class="text-white tabular-nums">
-                                <span class="text-2xl font-bold">R$ {{ number_format($movie->daily_price, 2, ',', '.') }}</span>
+                                <span class="text-2xl font-bold">R$ {{ number_format($movie->priceTier->daily_price, 2, ',', '.') }}</span>
                                 <span class="text-sm text-[#678]">por dia</span>
                             </p>
                             <p class="mt-1 text-xs flex items-center gap-1.5 {{ $available ? 'text-[#9ab]' : 'text-[#ff9b9b]' }}">
@@ -201,7 +201,7 @@
     <script>
         // Atualiza o total e a data de devolução conforme os dias digitados
         (function() {
-            const price = @json((float) $movie->daily_price);
+            const price = @json((float) $movie->priceTier->daily_price);
             const input = document.getElementById('days');
             const total = document.getElementById('rent-total');
             const due = document.getElementById('rent-due');

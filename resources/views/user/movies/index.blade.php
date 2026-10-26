@@ -111,7 +111,7 @@
 
                                 <div class="flex items-center justify-between pt-1 text-xs">
                                     <span class="text-[#9ab] tabular-nums">
-                                        R$ {{ number_format($movie->daily_price, 2, ',', '.') }}<span class="text-[#678]">/dia</span>
+                                        R$ {{ number_format($movie->priceTier->daily_price, 2, ',', '.') }}<span class="text-[#678]">/dia</span>
                                     </span>
                                     @if ($rating !== null)
                                         <span class="text-[#53c7ff] tabular-nums" title="Média das avaliações">

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Genre;
 use App\Models\Movie;
+use App\Models\PriceTier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,12 +18,12 @@ class MovieCoverTest extends TestCase
     private function payload(array $overrides = []): array
     {
         return array_merge([
-            'title'       => 'Matrix',
-            'year'        => 1999,
-            'duration'    => 136,
-            'stock'       => 2,
-            'daily_price' => 5,
-            'genre_id'    => Genre::factory()->create()->id,
+            'title'         => 'Matrix',
+            'year'          => 1999,
+            'duration'      => 136,
+            'stock'         => 2,
+            'price_tier_id' => PriceTier::factory()->create()->id,
+            'genre_id'      => Genre::factory()->create()->id,
         ], $overrides);
     }
 

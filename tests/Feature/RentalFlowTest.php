@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Movie;
+use App\Models\PriceTier;
 use App\Models\Rental;
 use App\Models\User;
 use Carbon\Carbon;
@@ -27,7 +28,10 @@ class RentalFlowTest extends TestCase
 
     private function movie(int $stock = 2, float $price = 10): Movie
     {
-        return Movie::factory()->create(['stock' => $stock, 'daily_price' => $price]);
+        return Movie::factory()->create([
+            'stock'         => $stock,
+            'price_tier_id' => PriceTier::factory()->create(['daily_price' => $price])->id,
+        ]);
     }
 
     private function reserve(User $user, Movie $movie, int $days = 3)
@@ -52,6 +56,16 @@ class RentalFlowTest extends TestCase
         $this->assertEquals('30.00', $rental->total_price);
         $this->assertTrue($rental->reserved_until->equalTo(now()->addHours(24)));
         $this->assertSame(2, $movie->fresh()->stock);
+    }
+
+    public function test_changing_the_tier_price_does_not_change_existing_rentals(): void
+    {
+        $movie = $this->movie(price: 10);
+        $this->reserve($this->customer(), $movie, 3);
+
+        $movie->priceTier->update(['daily_price' => 20]);
+
+        $this->assertEquals('30.00', Rental::firstOrFail()->total_price);
     }
 
     public function test_cannot_reserve_without_stock(): void
