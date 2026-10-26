@@ -27,6 +27,5 @@ Homestead.yaml
 Thumbs.db
 *:Zone.Identifier
 _ide_helper_models.php
-/certs/corp-ca.crt
-/compose.override.yaml
 *.patch
+/docs/ENTENDENDO-O-PROJETO.md
