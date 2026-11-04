@@ -10,7 +10,7 @@ Sistema de locadora desenvolvido com Laravel 13 e MySQL. O cliente reserva filme
 2. **Retirada (balcão):** o administrador confirma a retirada. O prazo de devolução começa a contar a partir desse momento.
 3. **Devolução (balcão):** o administrador registra a devolução e a cópia volta a ficar disponível no estoque.
 
-O cliente pode cancelar a reserva antes da retirada. Caso ninguém retire o filme dentro do prazo, a reserva expira automaticamente. O prazo padrão é de 24 horas e pode ser configurado pela variável `RENTAL_RESERVATION_HOURS`. Nos dois casos, a cópia retorna ao estoque.
+O cliente pode cancelar a reserva antes da retirada. Caso ninguém retire o filme dentro do prazo, a retirada passa a ser recusada e a tarefa agendada (serviço `scheduler`, a cada 5 minutos) marca a reserva como expirada. O prazo padrão é de 24 horas e pode ser configurado pela variável `RENTAL_RESERVATION_HOURS`. Nos dois casos, a cópia retorna ao estoque.
 
 **Multa por atraso:** cada dia ou fração de dia de atraso custa 1,5 vez o valor da diária do aluguel.
 
