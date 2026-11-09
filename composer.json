@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "joao/video-store",
     "type": "project",
-    "description": "7 Rent: locadora de filmes em Laravel, com reserva pelo site e integração ao TMDB.",
+    "description": "7 Rent: locadora de filmes em Laravel, com reserva pelo site e integra\u00e7\u00e3o ao TMDB.",
     "license": "MIT",
     "require": {
         "php": "^8.4",
@@ -51,7 +51,8 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
