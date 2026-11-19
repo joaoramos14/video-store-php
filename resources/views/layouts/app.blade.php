@@ -30,6 +30,28 @@
                     class="text-[#9ab] hover:text-white transition-colors">Catálogo</a>
                 <a href="{{ route('rentals.index') }}" class="text-[#9ab] hover:text-white transition-colors">Meus
                     aluguéis</a>
+                @auth
+                    <!-- Área do usuário: separada dos links por uma linha vertical -->
+                    <div class="flex items-center gap-3 pl-5 border-l border-[#2c3440]">
+                        <span class="flex items-center gap-2 normal-case tracking-normal" title="{{ auth()->user()->name }}">
+                            <!-- Inicial do nome, no azul da marca -->
+                            <span class="w-7 h-7 rounded-full bg-[#1f7fb8] text-white text-[12px] font-bold flex items-center justify-center" aria-hidden="true">
+                                {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
+                            </span>
+                            <span class="hidden sm:inline text-white text-[13px] font-semibold max-w-[140px] truncate">
+                                {{ \Illuminate\Support\Str::before(auth()->user()->name, ' ') }}
+                            </span>
+                        </span>
+
+                        <form method="POST" action="{{ route('filament.account.auth.logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="px-2.5 py-1 rounded-[3px] border border-[#2c3440] text-[#9ab] text-[11px] font-semibold uppercase tracking-[0.1em] hover:text-white hover:border-[#678] transition-colors cursor-pointer">
+                                Sair
+                            </button>
+                        </form>
+                    </div>
+                @endauth
             </nav>
         </div>
 
@@ -45,6 +67,7 @@
                         class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Filmes</a>
                     <a href="{{ route('admin.rentals.index') }}"
                         class="text-[#9ab] hover:text-[#53c7ff] transition-colors">Aluguéis</a>
+                    <a href="{{ url('/admin') }}" class="ml-auto text-[#53c7ff] hover:text-white transition-colors">Painel admin →</a>
                 </div>
             </div>
         @endif

@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureIsAdmin::class,
         ]);
+
+        // Sem login, o site manda para a tela de login do Filament
+        $middleware->redirectGuestsTo(fn () => route('filament.account.auth.login'));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

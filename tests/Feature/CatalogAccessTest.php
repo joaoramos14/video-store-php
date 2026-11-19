@@ -11,7 +11,7 @@ class CatalogAccessTest extends TestCase
 
     public function test_the_catalog_requires_login(): void
     {
-        $this->get('/')->assertStatus(401);
+        $this->get('/')->assertRedirect('/account/login');
     }
 
     public function test_the_catalog_loads_for_a_logged_in_user(): void
