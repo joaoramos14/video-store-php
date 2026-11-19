@@ -44,6 +44,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return match ($panel->getId()) {
             'admin' => $this->isAdmin(),
+            'account' => true,
             default => false,
         };
     }
